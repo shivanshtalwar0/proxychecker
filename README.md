@@ -2,8 +2,8 @@
 High Performant,MultiThreaded, C Based proxy checker Tool which makes validating and checking millions of proxy in almost no time.
 
 # Compilation for Linux
-Linux Executable is already included in Repository named proxychecker-1.0_linux
-you can run the tool directly without compiling for linux
+Linux Executable is already included in Repository named proxychecker-1.0_linux<br>
+you can run the tool directly without compiling for linux<br>
 Steps to run the Tool
 (1) open Terminal
 (2) Run the code below
