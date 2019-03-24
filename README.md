@@ -10,7 +10,7 @@ you can run the tool directly without compiling for linux<br>
   <p style='background-color:black color:white'>$>./proxychecker-1.0_linux --inputproxyfile million.txt --outputproxyfile wow.txt</p>
 or<br> 
 you can compile simply uning gcc<br>
-<p style='background-color:black color:white'>$>
+<code style='background-color:black color:white'>
 $> gcc -I /usr/include/python2.7/ proxychecker.c -o proxychecker-1.0_linux -lpython2.7 -lm -lutil -ldl
 </p>
 
