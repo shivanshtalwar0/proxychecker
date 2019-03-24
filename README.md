@@ -4,12 +4,13 @@ High Performant,MultiThreaded, C Based proxy checker Tool which makes validating
 # Compilation for Linux
 Linux Executable is already included in Repository named proxychecker-1.0_linux<br>
 you can run the tool directly without compiling for linux<br>
-Steps to run the Tool
-(1) open Terminal
-(2) Run the code below
-$>./proxychecker-1.0_linux --inputproxyfile million.txt --outputproxyfile wow.txt
-or 
-you can compile simply uning gcc
+<b>Steps to run the Tool<b><br>
+(1) open Terminal<br>
+(2) Run the code below<br>
+  <p style='background-color:black color:white'>$>./proxychecker-1.0_linux --inputproxyfile million.txt --outputproxyfile wow.txt</p>
+or<br> 
+you can compile simply uning gcc<br>
+<p style='background-color:black color:white'>$>
 $> gcc -I /usr/include/python2.7/ proxychecker.c -o proxychecker-1.0_linux -lpython2.7 -lm -lutil -ldl
-
+</p>
 
