@@ -1038,33 +1038,20 @@ static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr
 #define __Pyx_PyObject_SetAttrStr(o,n,v) PyObject_SetAttr(o,n,v)
 #endif
 
-/* PyIntCompare.proto */
-static CYTHON_INLINE PyObject* __Pyx_PyInt_EqObjC(PyObject *op1, PyObject *op2, long intval, long inplace);
+/* IncludeStringH.proto */
+#include <string.h>
 
-/* PyObjectLookupSpecial.proto */
-#if CYTHON_USE_PYTYPE_LOOKUP && CYTHON_USE_TYPE_SLOTS
-static CYTHON_INLINE PyObject* __Pyx_PyObject_LookupSpecial(PyObject* obj, PyObject* attr_name) {
-    PyObject *res;
-    PyTypeObject *tp = Py_TYPE(obj);
-#if PY_MAJOR_VERSION < 3
-    if (unlikely(PyInstance_Check(obj)))
-        return __Pyx_PyObject_GetAttrStr(obj, attr_name);
-#endif
-    res = _PyType_Lookup(tp, attr_name);
-    if (likely(res)) {
-        descrgetfunc f = Py_TYPE(res)->tp_descr_get;
-        if (!f) {
-            Py_INCREF(res);
-        } else {
-            res = f(res, obj, (PyObject *)tp);
-        }
-    } else {
-        PyErr_SetObject(PyExc_AttributeError, attr_name);
-    }
-    return res;
-}
+/* BytesEquals.proto */
+static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals);
+
+/* UnicodeEquals.proto */
+static CYTHON_INLINE int __Pyx_PyUnicode_Equals(PyObject* s1, PyObject* s2, int equals);
+
+/* StrEquals.proto */
+#if PY_MAJOR_VERSION >= 3
+#define __Pyx_PyString_Equals __Pyx_PyUnicode_Equals
 #else
-#define __Pyx_PyObject_LookupSpecial(o,n) __Pyx_PyObject_GetAttrStr(o,n)
+#define __Pyx_PyString_Equals __Pyx_PyBytes_Equals
 #endif
 
 /* PyErrFetchRestore.proto */
@@ -1092,32 +1079,34 @@ static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject 
 #define __Pyx_ErrFetch(type, value, tb)  PyErr_Fetch(type, value, tb)
 #endif
 
-/* PyIntBinop.proto */
-#if !CYTHON_COMPILING_IN_PYPY
-static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
-#else
-#define __Pyx_PyInt_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
-    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
-#endif
-
-/* IncludeStringH.proto */
-#include <string.h>
-
-/* BytesEquals.proto */
-static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals);
-
-/* UnicodeEquals.proto */
-static CYTHON_INLINE int __Pyx_PyUnicode_Equals(PyObject* s1, PyObject* s2, int equals);
-
-/* StrEquals.proto */
-#if PY_MAJOR_VERSION >= 3
-#define __Pyx_PyString_Equals __Pyx_PyUnicode_Equals
-#else
-#define __Pyx_PyString_Equals __Pyx_PyBytes_Equals
-#endif
-
 /* RaiseException.proto */
 static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
+
+/* PyObjectLookupSpecial.proto */
+#if CYTHON_USE_PYTYPE_LOOKUP && CYTHON_USE_TYPE_SLOTS
+static CYTHON_INLINE PyObject* __Pyx_PyObject_LookupSpecial(PyObject* obj, PyObject* attr_name) {
+    PyObject *res;
+    PyTypeObject *tp = Py_TYPE(obj);
+#if PY_MAJOR_VERSION < 3
+    if (unlikely(PyInstance_Check(obj)))
+        return __Pyx_PyObject_GetAttrStr(obj, attr_name);
+#endif
+    res = _PyType_Lookup(tp, attr_name);
+    if (likely(res)) {
+        descrgetfunc f = Py_TYPE(res)->tp_descr_get;
+        if (!f) {
+            Py_INCREF(res);
+        } else {
+            res = f(res, obj, (PyObject *)tp);
+        }
+    } else {
+        PyErr_SetObject(PyExc_AttributeError, attr_name);
+    }
+    return res;
+}
+#else
+#define __Pyx_PyObject_LookupSpecial(o,n) __Pyx_PyObject_GetAttrStr(o,n)
+#endif
 
 /* GetItemInt.proto */
 #define __Pyx_GetItemInt(o, i, type, is_signed, to_py_func, is_list, wraparound, boundscheck)\
@@ -1247,6 +1236,14 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(
         PyObject** py_start, PyObject** py_stop, PyObject** py_slice,
         int has_cstart, int has_cstop, int wraparound);
 
+/* PyIntBinop.proto */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, long intval, int inplace, int zerodivision_check);
+#else
+#define __Pyx_PyInt_AddObjC(op1, op2, intval, inplace, zerodivision_check)\
+    (inplace ? PyNumber_InPlaceAdd(op1, op2) : PyNumber_Add(op1, op2))
+#endif
+
 /* PySequenceContains.proto */
 static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* seq, int eq) {
     int result = PySequence_Contains(seq, item);
@@ -1343,9 +1340,8 @@ static const char __pyx_k_f[] = "f";
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_p[] = "p";
 static const char __pyx_k_r[] = "r";
-static const char __pyx_k_w[] = "w";
 static const char __pyx_k__2[] = "\n";
-static const char __pyx_k__4[] = "";
+static const char __pyx_k__3[] = "";
 static const char __pyx_k__6[] = "\r";
 #if PY_MAJOR_VERSION >= 3
 static const char __pyx_k__8[] = "\n______________________________________Proxy Checker 1.0________________________________________________\n            Maximum Threads Spawned!\303\260\302\237\302\230\302\201\n            High Performant C code\n            Developed by Shivansh Talwar\n            follow me on Instagram:https://www.instagram.com/i_m_shivansh_talwar/\n            Leave a Star on github If you Liked My work! \303\260\302\237\302\230\302\211\n            Press Ctr + C to stop the tool\n\n            Status:[\303\242\302\234\302\205]\n";
@@ -1357,6 +1353,7 @@ static const char __pyx_k__25[] = "--";
 static const char __pyx_k__26[] = "-";
 static const char __pyx_k_doc[] = "__doc__";
 static const char __pyx_k_end[] = "end";
+static const char __pyx_k_fil[] = "fil";
 static const char __pyx_k_get[] = "get";
 static const char __pyx_k_key[] = "key";
 static const char __pyx_k_run[] = "run";
@@ -1371,7 +1368,6 @@ static const char __pyx_k_join[] = "join";
 static const char __pyx_k_link[] = "link";
 static const char __pyx_k_main[] = "__main__";
 static const char __pyx_k_name[] = "__name__";
-static const char __pyx_k_once[] = "_once";
 static const char __pyx_k_open[] = "open";
 static const char __pyx_k_read[] = "read";
 static const char __pyx_k_self[] = "self";
@@ -1401,6 +1397,7 @@ static const char __pyx_k_proxies[] = "proxies";
 static const char __pyx_k_replace[] = "replace";
 static const char __pyx_k_timeout[] = "timeout";
 static const char __pyx_k_Threader[] = "Threader";
+static const char __pyx_k_fhandler[] = "fhandler";
 static const char __pyx_k_filename[] = "filename";
 static const char __pyx_k_helpinfo[] = "helpinfo";
 static const char __pyx_k_qualname[] = "__qualname__";
@@ -1409,12 +1406,14 @@ static const char __pyx_k_arguments[] = "arguments";
 static const char __pyx_k_inputfile[] = "inputfile";
 static const char __pyx_k_metaclass[] = "__metaclass__";
 static const char __pyx_k_threading[] = "threading";
+static const char __pyx_k_fhandler_2[] = "_fhandler";
 static const char __pyx_k_outputfile[] = "outputfile";
 static const char __pyx_k_startswith[] = "startswith";
 static const char __pyx_k_ProxyChecker[] = "ProxyChecker";
 static const char __pyx_k_Threader_run[] = "Threader.run";
 static const char __pyx_k_argumentsdict[] = "argumentsdict";
 static const char __pyx_k_Checker___init[] = "Checker.__init__";
+static const char __pyx_k_Proxies_Loaded[] = "{} Proxies Loaded..";
 static const char __pyx_k_inputproxyfile[] = "inputproxyfile";
 static const char __pyx_k_start_checking[] = "start_checking";
 static const char __pyx_k_Threader___init[] = "Threader.__init__";
@@ -1437,6 +1436,7 @@ static PyObject *__pyx_n_s_Checker;
 static PyObject *__pyx_n_s_Checker___init;
 static PyObject *__pyx_n_s_Checker__load_proxy_from_file;
 static PyObject *__pyx_n_s_Checker_start_checking;
+static PyObject *__pyx_kp_s_Proxies_Loaded;
 static PyObject *__pyx_n_s_ProxyChecker;
 static PyObject *__pyx_n_s_ProxyChecker___init;
 static PyObject *__pyx_n_s_ProxyChecker_check;
@@ -1449,7 +1449,7 @@ static PyObject *__pyx_kp_s_Welcome_to_Proxy_Checker_1_0_He;
 static PyObject *__pyx_kp_s__2;
 static PyObject *__pyx_kp_s__25;
 static PyObject *__pyx_kp_s__26;
-static PyObject *__pyx_kp_s__4;
+static PyObject *__pyx_kp_s__3;
 static PyObject *__pyx_kp_s__6;
 static PyObject *__pyx_kp_s__9;
 static PyObject *__pyx_n_s_a;
@@ -1464,6 +1464,9 @@ static PyObject *__pyx_n_s_end;
 static PyObject *__pyx_n_s_enter;
 static PyObject *__pyx_n_s_exit;
 static PyObject *__pyx_n_s_f;
+static PyObject *__pyx_n_s_fhandler;
+static PyObject *__pyx_n_s_fhandler_2;
+static PyObject *__pyx_n_s_fil;
 static PyObject *__pyx_n_s_file;
 static PyObject *__pyx_n_s_filename;
 static PyObject *__pyx_n_s_format;
@@ -1490,7 +1493,6 @@ static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_metaclass;
 static PyObject *__pyx_n_s_module;
 static PyObject *__pyx_n_s_name;
-static PyObject *__pyx_n_s_once;
 static PyObject *__pyx_n_s_open;
 static PyObject *__pyx_n_s_outputfile;
 static PyObject *__pyx_n_s_outputproxyfile;
@@ -1520,23 +1522,22 @@ static PyObject *__pyx_n_s_threading;
 static PyObject *__pyx_n_s_timeout;
 static PyObject *__pyx_n_s_tqdm;
 static PyObject *__pyx_n_s_value;
-static PyObject *__pyx_n_s_w;
 static PyObject *__pyx_n_s_write;
 static PyObject *__pyx_kp_s_wrong_arguments_format_it_should;
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker___init__(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2check(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_self, PyObject *__pyx_v_link); /* proto */
-static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_proxy, PyObject *__pyx_v_outputfile); /* proto */
+static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_proxy, PyObject *__pyx_v_fhandler); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython___defaults__(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_proxies, PyObject *__pyx_v_inputfile, PyObject *__pyx_v_outputfile); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_proxy_from_file(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_filename); /* proto */
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_checking(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self); /* proto */
-static PyObject *__pyx_float_0_0005;
+static PyObject *__pyx_float_0_00005;
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
-static PyObject *__pyx_int_9;
+static PyObject *__pyx_int_7;
 static PyObject *__pyx_tuple_;
-static PyObject *__pyx_tuple__3;
+static PyObject *__pyx_tuple__4;
 static PyObject *__pyx_tuple__5;
 static PyObject *__pyx_tuple__7;
 static PyObject *__pyx_slice__24;
@@ -1593,7 +1594,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker___i
 /* "proxychecker/proxycheckercython.pyx":9
  *         pass
  * 
- *     def check(self,link):             # <<<<<<<<<<<<<<
+ *     def check(self, link):             # <<<<<<<<<<<<<<
  *         p = link
  *         proxies = {
  */
@@ -1677,7 +1678,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
 
   /* "proxychecker/proxycheckercython.pyx":10
  * 
- *     def check(self,link):
+ *     def check(self, link):
  *         p = link             # <<<<<<<<<<<<<<
  *         proxies = {
  *             'http': 'http://{}'.format(p),
@@ -1747,7 +1748,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
  *             'https': 'http://{}'.format(p),
  *         }
  *         try:             # <<<<<<<<<<<<<<
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):
  *                 return True
  */
   {
@@ -1762,7 +1763,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
       /* "proxychecker/proxycheckercython.pyx":16
  *         }
  *         try:
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):             # <<<<<<<<<<<<<<
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):             # <<<<<<<<<<<<<<
  *                 return True
  *         except:
  */
@@ -1771,7 +1772,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
       __pyx_t_2 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 16, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_2);
       if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_proxies, __pyx_v_proxies) < 0) __PYX_ERR(0, 16, __pyx_L3_error)
-      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_timeout, __pyx_int_9) < 0) __PYX_ERR(0, 16, __pyx_L3_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_timeout, __pyx_int_7) < 0) __PYX_ERR(0, 16, __pyx_L3_error)
       __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple_, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 16, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -1785,7 +1786,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
 
         /* "proxychecker/proxycheckercython.pyx":17
  *         try:
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):
  *                 return True             # <<<<<<<<<<<<<<
  *         except:
  *             return False
@@ -1798,7 +1799,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
         /* "proxychecker/proxycheckercython.pyx":16
  *         }
  *         try:
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):             # <<<<<<<<<<<<<<
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):             # <<<<<<<<<<<<<<
  *                 return True
  *         except:
  */
@@ -1808,7 +1809,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
  *             'https': 'http://{}'.format(p),
  *         }
  *         try:             # <<<<<<<<<<<<<<
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):
  *                 return True
  */
     }
@@ -1823,7 +1824,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
 
     /* "proxychecker/proxycheckercython.pyx":18
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):
  *                 return True
  *         except:             # <<<<<<<<<<<<<<
  *             return False
@@ -1857,7 +1858,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
  *             'https': 'http://{}'.format(p),
  *         }
  *         try:             # <<<<<<<<<<<<<<
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):
  *                 return True
  */
     __Pyx_XGIVEREF(__pyx_t_5);
@@ -1883,7 +1884,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
   /* "proxychecker/proxycheckercython.pyx":9
  *         pass
  * 
- *     def check(self,link):             # <<<<<<<<<<<<<<
+ *     def check(self, link):             # <<<<<<<<<<<<<<
  *         p = link
  *         proxies = {
  */
@@ -1909,9 +1910,9 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_12ProxyChecker_2ch
 /* "proxychecker/proxycheckercython.pyx":23
  * 
  * class Threader(Thread):
- *     def __init__(self,proxy,outputfile):             # <<<<<<<<<<<<<<
+ *     def __init__(self, proxy,fhandler):             # <<<<<<<<<<<<<<
  *         super(Threader, self).__init__()
- *         self.proxy=proxy
+ *         self.proxy = proxy
  */
 
 /* Python wrapper */
@@ -1920,12 +1921,12 @@ static PyMethodDef __pyx_mdef_12proxychecker_18proxycheckercython_8Threader_1__i
 static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_8Threader_1__init__(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_self = 0;
   PyObject *__pyx_v_proxy = 0;
-  PyObject *__pyx_v_outputfile = 0;
+  PyObject *__pyx_v_fhandler = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_proxy,&__pyx_n_s_outputfile,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_self,&__pyx_n_s_proxy,&__pyx_n_s_fhandler,0};
     PyObject* values[3] = {0,0,0};
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
@@ -1953,7 +1954,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_8Threader_1__init_
         }
         CYTHON_FALLTHROUGH;
         case  2:
-        if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_outputfile)) != 0)) kw_args--;
+        if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_fhandler)) != 0)) kw_args--;
         else {
           __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); __PYX_ERR(0, 23, __pyx_L3_error)
         }
@@ -1970,7 +1971,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_8Threader_1__init_
     }
     __pyx_v_self = values[0];
     __pyx_v_proxy = values[1];
-    __pyx_v_outputfile = values[2];
+    __pyx_v_fhandler = values[2];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
@@ -1980,14 +1981,14 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_8Threader_1__init_
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(__pyx_self, __pyx_v_self, __pyx_v_proxy, __pyx_v_outputfile);
+  __pyx_r = __pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(__pyx_self, __pyx_v_self, __pyx_v_proxy, __pyx_v_fhandler);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_proxy, PyObject *__pyx_v_outputfile) {
+static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self, PyObject *__pyx_v_proxy, PyObject *__pyx_v_fhandler) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1997,10 +1998,10 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__
 
   /* "proxychecker/proxycheckercython.pyx":24
  * class Threader(Thread):
- *     def __init__(self,proxy,outputfile):
+ *     def __init__(self, proxy,fhandler):
  *         super(Threader, self).__init__()             # <<<<<<<<<<<<<<
- *         self.proxy=proxy
- *         self.outputfile=outputfile
+ *         self.proxy = proxy
+ *         self._fhandler = fhandler
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_Threader); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -2036,38 +2037,29 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "proxychecker/proxycheckercython.pyx":25
- *     def __init__(self,proxy,outputfile):
+ *     def __init__(self, proxy,fhandler):
  *         super(Threader, self).__init__()
- *         self.proxy=proxy             # <<<<<<<<<<<<<<
- *         self.outputfile=outputfile
- *         self._once=0
+ *         self.proxy = proxy             # <<<<<<<<<<<<<<
+ *         self._fhandler = fhandler
+ * 
  */
   if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_proxy, __pyx_v_proxy) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
 
   /* "proxychecker/proxycheckercython.pyx":26
  *         super(Threader, self).__init__()
- *         self.proxy=proxy
- *         self.outputfile=outputfile             # <<<<<<<<<<<<<<
- *         self._once=0
- * 
- */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_outputfile, __pyx_v_outputfile) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
-
-  /* "proxychecker/proxycheckercython.pyx":27
- *         self.proxy=proxy
- *         self.outputfile=outputfile
- *         self._once=0             # <<<<<<<<<<<<<<
+ *         self.proxy = proxy
+ *         self._fhandler = fhandler             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_once, __pyx_int_0) < 0) __PYX_ERR(0, 27, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_fhandler_2, __pyx_v_fhandler) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
 
   /* "proxychecker/proxycheckercython.pyx":23
  * 
  * class Threader(Thread):
- *     def __init__(self,proxy,outputfile):             # <<<<<<<<<<<<<<
+ *     def __init__(self, proxy,fhandler):             # <<<<<<<<<<<<<<
  *         super(Threader, self).__init__()
- *         self.proxy=proxy
+ *         self.proxy = proxy
  */
 
   /* function exit code */
@@ -2085,12 +2077,12 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader___init__
   return __pyx_r;
 }
 
-/* "proxychecker/proxycheckercython.pyx":30
+/* "proxychecker/proxycheckercython.pyx":29
  * 
  * 
  *     def run(self):             # <<<<<<<<<<<<<<
  *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
+ *             self._fhandler.write(self.proxy + "\n")
  */
 
 /* Python wrapper */
@@ -2108,7 +2100,6 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_8Threader_3run(PyO
 }
 
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
-  PyObject *__pyx_v_f = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2116,22 +2107,16 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYT
   PyObject *__pyx_t_3 = NULL;
   PyObject *__pyx_t_4 = NULL;
   int __pyx_t_5;
-  PyObject *__pyx_t_6 = NULL;
-  PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
-  PyObject *__pyx_t_9 = NULL;
-  PyObject *__pyx_t_10 = NULL;
-  int __pyx_t_11;
   __Pyx_RefNannySetupContext("run", 0);
 
-  /* "proxychecker/proxycheckercython.pyx":31
+  /* "proxychecker/proxycheckercython.pyx":30
  * 
  *     def run(self):
  *         if ProxyChecker().check(self.proxy):             # <<<<<<<<<<<<<<
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:
+ *             self._fhandler.write(self.proxy + "\n")
+ * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_ProxyChecker); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_ProxyChecker); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -2145,13 +2130,13 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYT
   }
   __pyx_t_2 = (__pyx_t_4) ? __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallNoArg(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_check); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_check); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxy); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_4 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -2166,408 +2151,63 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYT
   __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_t_2) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_2);
   __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_5) {
 
-    /* "proxychecker/proxycheckercython.pyx":32
- *     def run(self):
- *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:             # <<<<<<<<<<<<<<
- *                 with open(self.outputfile,"w") as f:
- *                     f.write(self.proxy+"\n")
- */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_once); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = __Pyx_PyInt_EqObjC(__pyx_t_1, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 32, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_3);
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 32, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (__pyx_t_5) {
-
-      /* "proxychecker/proxycheckercython.pyx":33
- *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:             # <<<<<<<<<<<<<<
- *                     f.write(self.proxy+"\n")
- *                 self._once=self._once+1
- */
-      /*with:*/ {
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_outputfile); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 33, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_1);
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_3);
-        __Pyx_INCREF(__pyx_n_s_w);
-        __Pyx_GIVEREF(__pyx_n_s_w);
-        PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_n_s_w);
-        __pyx_t_3 = 0;
-        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_1, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 33, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-        __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_3, __pyx_n_s_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 33, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_2 = __Pyx_PyObject_LookupSpecial(__pyx_t_3, __pyx_n_s_enter); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L5_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_4 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
-          __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
-          if (likely(__pyx_t_4)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-            __Pyx_INCREF(__pyx_t_4);
-            __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_2, function);
-          }
-        }
-        __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
-        __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L5_error)
-        __Pyx_GOTREF(__pyx_t_1);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_2 = __pyx_t_1;
-        __pyx_t_1 = 0;
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        /*try:*/ {
-          {
-            __Pyx_PyThreadState_declare
-            __Pyx_PyThreadState_assign
-            __Pyx_ExceptionSave(&__pyx_t_7, &__pyx_t_8, &__pyx_t_9);
-            __Pyx_XGOTREF(__pyx_t_7);
-            __Pyx_XGOTREF(__pyx_t_8);
-            __Pyx_XGOTREF(__pyx_t_9);
-            /*try:*/ {
-              __pyx_v_f = __pyx_t_2;
-              __pyx_t_2 = 0;
-
-              /* "proxychecker/proxycheckercython.pyx":34
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:
- *                     f.write(self.proxy+"\n")             # <<<<<<<<<<<<<<
- *                 self._once=self._once+1
- *             else:
- */
-              __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_write); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 34, __pyx_L9_error)
-              __Pyx_GOTREF(__pyx_t_3);
-              __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxy); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L9_error)
-              __Pyx_GOTREF(__pyx_t_1);
-              __pyx_t_4 = PyNumber_Add(__pyx_t_1, __pyx_kp_s__2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 34, __pyx_L9_error)
-              __Pyx_GOTREF(__pyx_t_4);
-              __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-              __pyx_t_1 = NULL;
-              if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
-                __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_3);
-                if (likely(__pyx_t_1)) {
-                  PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-                  __Pyx_INCREF(__pyx_t_1);
-                  __Pyx_INCREF(function);
-                  __Pyx_DECREF_SET(__pyx_t_3, function);
-                }
-              }
-              __pyx_t_2 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_1, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4);
-              __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 34, __pyx_L9_error)
-              __Pyx_GOTREF(__pyx_t_2);
-              __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-              __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-
-              /* "proxychecker/proxycheckercython.pyx":33
- *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:             # <<<<<<<<<<<<<<
- *                     f.write(self.proxy+"\n")
- *                 self._once=self._once+1
- */
-            }
-            __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-            __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-            __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-            goto __pyx_L14_try_end;
-            __pyx_L9_error:;
-            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-            __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-            __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-            /*except:*/ {
-              __Pyx_AddTraceback("proxychecker.proxycheckercython.Threader.run", __pyx_clineno, __pyx_lineno, __pyx_filename);
-              if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_3, &__pyx_t_4) < 0) __PYX_ERR(0, 33, __pyx_L11_except_error)
-              __Pyx_GOTREF(__pyx_t_2);
-              __Pyx_GOTREF(__pyx_t_3);
-              __Pyx_GOTREF(__pyx_t_4);
-              __pyx_t_1 = PyTuple_Pack(3, __pyx_t_2, __pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L11_except_error)
-              __Pyx_GOTREF(__pyx_t_1);
-              __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_1, NULL);
-              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-              if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 33, __pyx_L11_except_error)
-              __Pyx_GOTREF(__pyx_t_10);
-              __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_10);
-              __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-              if (__pyx_t_5 < 0) __PYX_ERR(0, 33, __pyx_L11_except_error)
-              __pyx_t_11 = ((!(__pyx_t_5 != 0)) != 0);
-              if (__pyx_t_11) {
-                __Pyx_GIVEREF(__pyx_t_2);
-                __Pyx_GIVEREF(__pyx_t_3);
-                __Pyx_XGIVEREF(__pyx_t_4);
-                __Pyx_ErrRestoreWithState(__pyx_t_2, __pyx_t_3, __pyx_t_4);
-                __pyx_t_2 = 0; __pyx_t_3 = 0; __pyx_t_4 = 0; 
-                __PYX_ERR(0, 33, __pyx_L11_except_error)
-              }
-              __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-              __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-              __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-              goto __pyx_L10_exception_handled;
-            }
-            __pyx_L11_except_error:;
-            __Pyx_XGIVEREF(__pyx_t_7);
-            __Pyx_XGIVEREF(__pyx_t_8);
-            __Pyx_XGIVEREF(__pyx_t_9);
-            __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
-            goto __pyx_L1_error;
-            __pyx_L10_exception_handled:;
-            __Pyx_XGIVEREF(__pyx_t_7);
-            __Pyx_XGIVEREF(__pyx_t_8);
-            __Pyx_XGIVEREF(__pyx_t_9);
-            __Pyx_ExceptionReset(__pyx_t_7, __pyx_t_8, __pyx_t_9);
-            __pyx_L14_try_end:;
-          }
-        }
-        /*finally:*/ {
-          /*normal exit:*/{
-            if (__pyx_t_6) {
-              __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_tuple__3, NULL);
-              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 33, __pyx_L1_error)
-              __Pyx_GOTREF(__pyx_t_9);
-              __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-            }
-            goto __pyx_L8;
-          }
-          __pyx_L8:;
-        }
-        goto __pyx_L18;
-        __pyx_L5_error:;
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        goto __pyx_L1_error;
-        __pyx_L18:;
-      }
-
-      /* "proxychecker/proxycheckercython.pyx":35
- *                 with open(self.outputfile,"w") as f:
- *                     f.write(self.proxy+"\n")
- *                 self._once=self._once+1             # <<<<<<<<<<<<<<
- *             else:
- *                 with open(self.outputfile,"a") as f:
- */
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_once); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 35, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_t_4, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 35, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_once, __pyx_t_3) < 0) __PYX_ERR(0, 35, __pyx_L1_error)
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-
-      /* "proxychecker/proxycheckercython.pyx":32
- *     def run(self):
- *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:             # <<<<<<<<<<<<<<
- *                 with open(self.outputfile,"w") as f:
- *                     f.write(self.proxy+"\n")
- */
-      goto __pyx_L4;
-    }
-
-    /* "proxychecker/proxycheckercython.pyx":37
- *                 self._once=self._once+1
- *             else:
- *                 with open(self.outputfile,"a") as f:             # <<<<<<<<<<<<<<
- *                     f.write(self.proxy+"\n")
- * 
- */
-    /*else*/ {
-      /*with:*/ {
-        __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_outputfile); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 37, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 37, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_3);
-        __Pyx_INCREF(__pyx_n_s_a);
-        __Pyx_GIVEREF(__pyx_n_s_a);
-        PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_n_s_a);
-        __pyx_t_3 = 0;
-        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_4, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 37, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_3);
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_3, __pyx_n_s_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 37, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_2 = __Pyx_PyObject_LookupSpecial(__pyx_t_3, __pyx_n_s_enter); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 37, __pyx_L19_error)
-        __Pyx_GOTREF(__pyx_t_2);
-        __pyx_t_1 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
-          __pyx_t_1 = PyMethod_GET_SELF(__pyx_t_2);
-          if (likely(__pyx_t_1)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-            __Pyx_INCREF(__pyx_t_1);
-            __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_2, function);
-          }
-        }
-        __pyx_t_4 = (__pyx_t_1) ? __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_1) : __Pyx_PyObject_CallNoArg(__pyx_t_2);
-        __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 37, __pyx_L19_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-        __pyx_t_2 = __pyx_t_4;
-        __pyx_t_4 = 0;
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        /*try:*/ {
-          {
-            __Pyx_PyThreadState_declare
-            __Pyx_PyThreadState_assign
-            __Pyx_ExceptionSave(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7);
-            __Pyx_XGOTREF(__pyx_t_9);
-            __Pyx_XGOTREF(__pyx_t_8);
-            __Pyx_XGOTREF(__pyx_t_7);
-            /*try:*/ {
-              __pyx_v_f = __pyx_t_2;
-              __pyx_t_2 = 0;
-
-              /* "proxychecker/proxycheckercython.pyx":38
- *             else:
- *                 with open(self.outputfile,"a") as f:
- *                     f.write(self.proxy+"\n")             # <<<<<<<<<<<<<<
- * 
- * 
- */
-              __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_write); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L23_error)
-              __Pyx_GOTREF(__pyx_t_3);
-              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxy); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 38, __pyx_L23_error)
-              __Pyx_GOTREF(__pyx_t_4);
-              __pyx_t_1 = PyNumber_Add(__pyx_t_4, __pyx_kp_s__2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 38, __pyx_L23_error)
-              __Pyx_GOTREF(__pyx_t_1);
-              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-              __pyx_t_4 = NULL;
-              if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
-                __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-                if (likely(__pyx_t_4)) {
-                  PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-                  __Pyx_INCREF(__pyx_t_4);
-                  __Pyx_INCREF(function);
-                  __Pyx_DECREF_SET(__pyx_t_3, function);
-                }
-              }
-              __pyx_t_2 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_t_1) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_1);
-              __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-              __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-              if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 38, __pyx_L23_error)
-              __Pyx_GOTREF(__pyx_t_2);
-              __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-              __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-
-              /* "proxychecker/proxycheckercython.pyx":37
- *                 self._once=self._once+1
- *             else:
- *                 with open(self.outputfile,"a") as f:             # <<<<<<<<<<<<<<
- *                     f.write(self.proxy+"\n")
- * 
- */
-            }
-            __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-            __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-            __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-            goto __pyx_L28_try_end;
-            __pyx_L23_error:;
-            __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-            __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-            __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-            __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-            /*except:*/ {
-              __Pyx_AddTraceback("proxychecker.proxycheckercython.Threader.run", __pyx_clineno, __pyx_lineno, __pyx_filename);
-              if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_3, &__pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L25_except_error)
-              __Pyx_GOTREF(__pyx_t_2);
-              __Pyx_GOTREF(__pyx_t_3);
-              __Pyx_GOTREF(__pyx_t_1);
-              __pyx_t_4 = PyTuple_Pack(3, __pyx_t_2, __pyx_t_3, __pyx_t_1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 37, __pyx_L25_except_error)
-              __Pyx_GOTREF(__pyx_t_4);
-              __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_4, NULL);
-              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-              if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 37, __pyx_L25_except_error)
-              __Pyx_GOTREF(__pyx_t_10);
-              __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_10);
-              __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-              if (__pyx_t_11 < 0) __PYX_ERR(0, 37, __pyx_L25_except_error)
-              __pyx_t_5 = ((!(__pyx_t_11 != 0)) != 0);
-              if (__pyx_t_5) {
-                __Pyx_GIVEREF(__pyx_t_2);
-                __Pyx_GIVEREF(__pyx_t_3);
-                __Pyx_XGIVEREF(__pyx_t_1);
-                __Pyx_ErrRestoreWithState(__pyx_t_2, __pyx_t_3, __pyx_t_1);
-                __pyx_t_2 = 0; __pyx_t_3 = 0; __pyx_t_1 = 0; 
-                __PYX_ERR(0, 37, __pyx_L25_except_error)
-              }
-              __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-              __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-              __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-              goto __pyx_L24_exception_handled;
-            }
-            __pyx_L25_except_error:;
-            __Pyx_XGIVEREF(__pyx_t_9);
-            __Pyx_XGIVEREF(__pyx_t_8);
-            __Pyx_XGIVEREF(__pyx_t_7);
-            __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
-            goto __pyx_L1_error;
-            __pyx_L24_exception_handled:;
-            __Pyx_XGIVEREF(__pyx_t_9);
-            __Pyx_XGIVEREF(__pyx_t_8);
-            __Pyx_XGIVEREF(__pyx_t_7);
-            __Pyx_ExceptionReset(__pyx_t_9, __pyx_t_8, __pyx_t_7);
-            __pyx_L28_try_end:;
-          }
-        }
-        /*finally:*/ {
-          /*normal exit:*/{
-            if (__pyx_t_6) {
-              __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_tuple__3, NULL);
-              __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 37, __pyx_L1_error)
-              __Pyx_GOTREF(__pyx_t_7);
-              __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-            }
-            goto __pyx_L22;
-          }
-          __pyx_L22:;
-        }
-        goto __pyx_L32;
-        __pyx_L19_error:;
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-        goto __pyx_L1_error;
-        __pyx_L32:;
-      }
-    }
-    __pyx_L4:;
-
     /* "proxychecker/proxycheckercython.pyx":31
+ *     def run(self):
+ *         if ProxyChecker().check(self.proxy):
+ *             self._fhandler.write(self.proxy + "\n")             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_fhandler_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_write); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxy); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_4 = PyNumber_Add(__pyx_t_3, __pyx_kp_s__2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_4);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
+      __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+      if (likely(__pyx_t_3)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+        __Pyx_INCREF(__pyx_t_3);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_2, function);
+      }
+    }
+    __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4);
+    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+    /* "proxychecker/proxycheckercython.pyx":30
  * 
  *     def run(self):
  *         if ProxyChecker().check(self.proxy):             # <<<<<<<<<<<<<<
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:
+ *             self._fhandler.write(self.proxy + "\n")
+ * 
  */
   }
 
-  /* "proxychecker/proxycheckercython.pyx":30
+  /* "proxychecker/proxycheckercython.pyx":29
  * 
  * 
  *     def run(self):             # <<<<<<<<<<<<<<
  *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
+ *             self._fhandler.write(self.proxy + "\n")
  */
 
   /* function exit code */
@@ -2581,18 +2221,17 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_8Threader_2run(CYT
   __Pyx_AddTraceback("proxychecker.proxycheckercython.Threader.run", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_f);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "proxychecker/proxycheckercython.pyx":42
+/* "proxychecker/proxycheckercython.pyx":38
  * 
  * class Checker():
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
- *         self.proxies=proxies
- *         self.outputfile=outputfile
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
  */
 
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython___defaults__(CYTHON_UNUSED PyObject *__pyx_self) {
@@ -2602,18 +2241,18 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython___defaults__(CYTHO
   PyObject *__pyx_t_2 = NULL;
   __Pyx_RefNannySetupContext("__defaults__", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_proxies);
   __Pyx_GIVEREF(__Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_proxies);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self)->__pyx_arg_proxies);
-  __Pyx_INCREF(((PyObject*)__pyx_kp_s__4));
-  __Pyx_GIVEREF(((PyObject*)__pyx_kp_s__4));
-  PyTuple_SET_ITEM(__pyx_t_1, 1, ((PyObject*)__pyx_kp_s__4));
+  __Pyx_INCREF(((PyObject*)__pyx_kp_s__3));
+  __Pyx_GIVEREF(((PyObject*)__pyx_kp_s__3));
+  PyTuple_SET_ITEM(__pyx_t_1, 1, ((PyObject*)__pyx_kp_s__3));
   __Pyx_INCREF(((PyObject*)__pyx_kp_s_goodproxies_txt));
   __Pyx_GIVEREF(((PyObject*)__pyx_kp_s_goodproxies_txt));
   PyTuple_SET_ITEM(__pyx_t_1, 2, ((PyObject*)__pyx_kp_s_goodproxies_txt));
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
@@ -2653,7 +2292,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_1__init__
     PyObject* values[4] = {0,0,0,0};
     __pyx_defaults *__pyx_dynamic_args = __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_self);
     values[1] = __pyx_dynamic_args->__pyx_arg_proxies;
-    values[2] = ((PyObject *)((PyObject*)__pyx_kp_s__4));
+    values[2] = ((PyObject *)((PyObject*)__pyx_kp_s__3));
     values[3] = ((PyObject *)((PyObject*)__pyx_kp_s_goodproxies_txt));
     if (unlikely(__pyx_kwds)) {
       Py_ssize_t kw_args;
@@ -2695,7 +2334,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_1__init__
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(0, 42, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) __PYX_ERR(0, 38, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -2717,7 +2356,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_1__init__
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 0, 1, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 42, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 1, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 38, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("proxychecker.proxycheckercython.Checker.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2741,42 +2380,42 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker___init__(
   int __pyx_t_6;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "proxychecker/proxycheckercython.pyx":43
+  /* "proxychecker/proxycheckercython.pyx":39
  * class Checker():
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):
- *         self.proxies=proxies             # <<<<<<<<<<<<<<
- *         self.outputfile=outputfile
- *         if(inputfile !=""):
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):
+ *         self.proxies = proxies             # <<<<<<<<<<<<<<
+ *         self.outputfile = outputfile
+ *         if (inputfile != ""):
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_proxies, __pyx_v_proxies) < 0) __PYX_ERR(0, 43, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_proxies, __pyx_v_proxies) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":44
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):
- *         self.proxies=proxies
- *         self.outputfile=outputfile             # <<<<<<<<<<<<<<
- *         if(inputfile !=""):
+  /* "proxychecker/proxycheckercython.pyx":40
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile             # <<<<<<<<<<<<<<
+ *         if (inputfile != ""):
  *             self._load_proxy_from_file(inputfile)
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_outputfile, __pyx_v_outputfile) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_outputfile, __pyx_v_outputfile) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":45
- *         self.proxies=proxies
- *         self.outputfile=outputfile
- *         if(inputfile !=""):             # <<<<<<<<<<<<<<
+  /* "proxychecker/proxycheckercython.pyx":41
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
+ *         if (inputfile != ""):             # <<<<<<<<<<<<<<
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):
+ *         if (len(proxies) == 0 and inputfile == ""):
  */
-  __pyx_t_1 = (__Pyx_PyString_Equals(__pyx_v_inputfile, __pyx_kp_s__4, Py_NE)); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_1 = (__Pyx_PyString_Equals(__pyx_v_inputfile, __pyx_kp_s__3, Py_NE)); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 41, __pyx_L1_error)
   if (__pyx_t_1) {
 
-    /* "proxychecker/proxycheckercython.pyx":46
- *         self.outputfile=outputfile
- *         if(inputfile !=""):
+    /* "proxychecker/proxycheckercython.pyx":42
+ *         self.outputfile = outputfile
+ *         if (inputfile != ""):
  *             self._load_proxy_from_file(inputfile)             # <<<<<<<<<<<<<<
- *         if(len(proxies)==0 and inputfile==""):
+ *         if (len(proxies) == 0 and inputfile == ""):
  *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
  */
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_load_proxy_from_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 46, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_load_proxy_from_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 42, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_t_4 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -2790,67 +2429,67 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker___init__(
     }
     __pyx_t_2 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_v_inputfile) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_inputfile);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 46, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "proxychecker/proxycheckercython.pyx":45
- *         self.proxies=proxies
- *         self.outputfile=outputfile
- *         if(inputfile !=""):             # <<<<<<<<<<<<<<
+    /* "proxychecker/proxycheckercython.pyx":41
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
+ *         if (inputfile != ""):             # <<<<<<<<<<<<<<
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):
+ *         if (len(proxies) == 0 and inputfile == ""):
  */
   }
 
-  /* "proxychecker/proxycheckercython.pyx":47
- *         if(inputfile !=""):
+  /* "proxychecker/proxycheckercython.pyx":43
+ *         if (inputfile != ""):
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):             # <<<<<<<<<<<<<<
+ *         if (len(proxies) == 0 and inputfile == ""):             # <<<<<<<<<<<<<<
  *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
  *         pass
  */
-  __pyx_t_5 = PyObject_Length(__pyx_v_proxies); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_5 = PyObject_Length(__pyx_v_proxies); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 43, __pyx_L1_error)
   __pyx_t_6 = ((__pyx_t_5 == 0) != 0);
   if (__pyx_t_6) {
   } else {
     __pyx_t_1 = __pyx_t_6;
     goto __pyx_L5_bool_binop_done;
   }
-  __pyx_t_6 = (__Pyx_PyString_Equals(__pyx_v_inputfile, __pyx_kp_s__4, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_6 = (__Pyx_PyString_Equals(__pyx_v_inputfile, __pyx_kp_s__3, Py_EQ)); if (unlikely(__pyx_t_6 < 0)) __PYX_ERR(0, 43, __pyx_L1_error)
   __pyx_t_1 = __pyx_t_6;
   __pyx_L5_bool_binop_done:;
   if (unlikely(__pyx_t_1)) {
 
-    /* "proxychecker/proxycheckercython.pyx":48
+    /* "proxychecker/proxycheckercython.pyx":44
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):
+ *         if (len(proxies) == 0 and inputfile == ""):
  *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")             # <<<<<<<<<<<<<<
  *         pass
- *     def _load_proxy_from_file(self,filename):
+ * 
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__5, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 48, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 44, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 48, __pyx_L1_error)
+    __PYX_ERR(0, 44, __pyx_L1_error)
 
-    /* "proxychecker/proxycheckercython.pyx":47
- *         if(inputfile !=""):
+    /* "proxychecker/proxycheckercython.pyx":43
+ *         if (inputfile != ""):
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):             # <<<<<<<<<<<<<<
+ *         if (len(proxies) == 0 and inputfile == ""):             # <<<<<<<<<<<<<<
  *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
  *         pass
  */
   }
 
-  /* "proxychecker/proxycheckercython.pyx":42
+  /* "proxychecker/proxycheckercython.pyx":38
  * 
  * class Checker():
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
- *         self.proxies=proxies
- *         self.outputfile=outputfile
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
  */
 
   /* function exit code */
@@ -2868,10 +2507,10 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker___init__(
   return __pyx_r;
 }
 
-/* "proxychecker/proxycheckercython.pyx":50
- *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
+/* "proxychecker/proxycheckercython.pyx":47
  *         pass
- *     def _load_proxy_from_file(self,filename):             # <<<<<<<<<<<<<<
+ * 
+ *     def _load_proxy_from_file(self, filename):             # <<<<<<<<<<<<<<
  *         try:
  *             with open(filename, "r") as f:
  */
@@ -2908,11 +2547,11 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_3_load_pr
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_filename)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("_load_proxy_from_file", 1, 2, 2, 1); __PYX_ERR(0, 50, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("_load_proxy_from_file", 1, 2, 2, 1); __PYX_ERR(0, 47, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "_load_proxy_from_file") < 0)) __PYX_ERR(0, 50, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "_load_proxy_from_file") < 0)) __PYX_ERR(0, 47, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -2925,7 +2564,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_3_load_pr
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("_load_proxy_from_file", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 50, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("_load_proxy_from_file", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 47, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("proxychecker.proxycheckercython.Checker._load_proxy_from_file", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2962,9 +2601,9 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
   Py_ssize_t __pyx_t_17;
   __Pyx_RefNannySetupContext("_load_proxy_from_file", 0);
 
-  /* "proxychecker/proxycheckercython.pyx":51
- *         pass
- *     def _load_proxy_from_file(self,filename):
+  /* "proxychecker/proxycheckercython.pyx":48
+ * 
+ *     def _load_proxy_from_file(self, filename):
  *         try:             # <<<<<<<<<<<<<<
  *             with open(filename, "r") as f:
  *                 self.proxies = f.read().split("\n")
@@ -2978,15 +2617,15 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "proxychecker/proxycheckercython.pyx":52
- *     def _load_proxy_from_file(self,filename):
+      /* "proxychecker/proxycheckercython.pyx":49
+ *     def _load_proxy_from_file(self, filename):
  *         try:
  *             with open(filename, "r") as f:             # <<<<<<<<<<<<<<
  *                 self.proxies = f.read().split("\n")
  * 
  */
       /*with:*/ {
-        __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L3_error)
+        __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_INCREF(__pyx_v_filename);
         __Pyx_GIVEREF(__pyx_v_filename);
@@ -2994,12 +2633,12 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
         __Pyx_INCREF(__pyx_n_s_r);
         __Pyx_GIVEREF(__pyx_n_s_r);
         PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_n_s_r);
-        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_4, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 52, __pyx_L3_error)
+        __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_4, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 49, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_5, __pyx_n_s_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 52, __pyx_L3_error)
+        __pyx_t_6 = __Pyx_PyObject_LookupSpecial(__pyx_t_5, __pyx_n_s_exit); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 49, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_6);
-        __pyx_t_7 = __Pyx_PyObject_LookupSpecial(__pyx_t_5, __pyx_n_s_enter); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 52, __pyx_L9_error)
+        __pyx_t_7 = __Pyx_PyObject_LookupSpecial(__pyx_t_5, __pyx_n_s_enter); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 49, __pyx_L9_error)
         __Pyx_GOTREF(__pyx_t_7);
         __pyx_t_8 = NULL;
         if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -3013,7 +2652,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
         }
         __pyx_t_4 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_7);
         __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 52, __pyx_L9_error)
+        if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 49, __pyx_L9_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
         __pyx_t_7 = __pyx_t_4;
@@ -3031,14 +2670,14 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
               __pyx_v_f = __pyx_t_7;
               __pyx_t_7 = 0;
 
-              /* "proxychecker/proxycheckercython.pyx":53
+              /* "proxychecker/proxycheckercython.pyx":50
  *         try:
  *             with open(filename, "r") as f:
  *                 self.proxies = f.read().split("\n")             # <<<<<<<<<<<<<<
  * 
  *             for a in range(0, len(self.proxies)):
  */
-              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_read); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 53, __pyx_L13_error)
+              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_f, __pyx_n_s_read); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 50, __pyx_L13_error)
               __Pyx_GOTREF(__pyx_t_4);
               __pyx_t_8 = NULL;
               if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -3052,10 +2691,10 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
               }
               __pyx_t_5 = (__pyx_t_8) ? __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_8) : __Pyx_PyObject_CallNoArg(__pyx_t_4);
               __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-              if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 53, __pyx_L13_error)
+              if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 50, __pyx_L13_error)
               __Pyx_GOTREF(__pyx_t_5);
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_split); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 53, __pyx_L13_error)
+              __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_split); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 50, __pyx_L13_error)
               __Pyx_GOTREF(__pyx_t_4);
               __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
               __pyx_t_5 = NULL;
@@ -3070,14 +2709,14 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
               }
               __pyx_t_7 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_5, __pyx_kp_s__2) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_s__2);
               __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-              if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 53, __pyx_L13_error)
+              if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 50, __pyx_L13_error)
               __Pyx_GOTREF(__pyx_t_7);
               __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-              if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_proxies, __pyx_t_7) < 0) __PYX_ERR(0, 53, __pyx_L13_error)
+              if (__Pyx_PyObject_SetAttrStr(__pyx_v_self, __pyx_n_s_proxies, __pyx_t_7) < 0) __PYX_ERR(0, 50, __pyx_L13_error)
               __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-              /* "proxychecker/proxycheckercython.pyx":52
- *     def _load_proxy_from_file(self,filename):
+              /* "proxychecker/proxycheckercython.pyx":49
+ *     def _load_proxy_from_file(self, filename):
  *         try:
  *             with open(filename, "r") as f:             # <<<<<<<<<<<<<<
  *                 self.proxies = f.read().split("\n")
@@ -3095,20 +2734,20 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
             __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
             /*except:*/ {
               __Pyx_AddTraceback("proxychecker.proxycheckercython.Checker._load_proxy_from_file", __pyx_clineno, __pyx_lineno, __pyx_filename);
-              if (__Pyx_GetException(&__pyx_t_7, &__pyx_t_4, &__pyx_t_5) < 0) __PYX_ERR(0, 52, __pyx_L15_except_error)
+              if (__Pyx_GetException(&__pyx_t_7, &__pyx_t_4, &__pyx_t_5) < 0) __PYX_ERR(0, 49, __pyx_L15_except_error)
               __Pyx_GOTREF(__pyx_t_7);
               __Pyx_GOTREF(__pyx_t_4);
               __Pyx_GOTREF(__pyx_t_5);
-              __pyx_t_8 = PyTuple_Pack(3, __pyx_t_7, __pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 52, __pyx_L15_except_error)
+              __pyx_t_8 = PyTuple_Pack(3, __pyx_t_7, __pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 49, __pyx_L15_except_error)
               __Pyx_GOTREF(__pyx_t_8);
               __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_8, NULL);
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-              if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 52, __pyx_L15_except_error)
+              if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 49, __pyx_L15_except_error)
               __Pyx_GOTREF(__pyx_t_12);
               __pyx_t_13 = __Pyx_PyObject_IsTrue(__pyx_t_12);
               __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-              if (__pyx_t_13 < 0) __PYX_ERR(0, 52, __pyx_L15_except_error)
+              if (__pyx_t_13 < 0) __PYX_ERR(0, 49, __pyx_L15_except_error)
               __pyx_t_14 = ((!(__pyx_t_13 != 0)) != 0);
               if (__pyx_t_14) {
                 __Pyx_GIVEREF(__pyx_t_7);
@@ -3116,7 +2755,7 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
                 __Pyx_XGIVEREF(__pyx_t_5);
                 __Pyx_ErrRestoreWithState(__pyx_t_7, __pyx_t_4, __pyx_t_5);
                 __pyx_t_7 = 0; __pyx_t_4 = 0; __pyx_t_5 = 0; 
-                __PYX_ERR(0, 52, __pyx_L15_except_error)
+                __PYX_ERR(0, 49, __pyx_L15_except_error)
               }
               __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
               __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -3140,9 +2779,9 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
         /*finally:*/ {
           /*normal exit:*/{
             if (__pyx_t_6) {
-              __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_tuple__3, NULL);
+              __pyx_t_11 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_tuple__5, NULL);
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-              if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 52, __pyx_L3_error)
+              if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 49, __pyx_L3_error)
               __Pyx_GOTREF(__pyx_t_11);
               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
             }
@@ -3157,49 +2796,83 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
         __pyx_L22:;
       }
 
-      /* "proxychecker/proxycheckercython.pyx":55
+      /* "proxychecker/proxycheckercython.pyx":52
  *                 self.proxies = f.read().split("\n")
  * 
  *             for a in range(0, len(self.proxies)):             # <<<<<<<<<<<<<<
- *                 self.proxies[a] =self.proxies[a].replace("\r", "")
- *         except:
+ *                 self.proxies[a] = self.proxies[a].replace("\r", "")
+ *             print "{} Proxies Loaded..".format(len(self.proxies))
  */
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 55, __pyx_L3_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 52, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_15 = PyObject_Length(__pyx_t_5); if (unlikely(__pyx_t_15 == ((Py_ssize_t)-1))) __PYX_ERR(0, 55, __pyx_L3_error)
+      __pyx_t_15 = PyObject_Length(__pyx_t_5); if (unlikely(__pyx_t_15 == ((Py_ssize_t)-1))) __PYX_ERR(0, 52, __pyx_L3_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_16 = __pyx_t_15;
       for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_16; __pyx_t_17+=1) {
         __pyx_v_a = __pyx_t_17;
 
-        /* "proxychecker/proxycheckercython.pyx":56
+        /* "proxychecker/proxycheckercython.pyx":53
  * 
  *             for a in range(0, len(self.proxies)):
- *                 self.proxies[a] =self.proxies[a].replace("\r", "")             # <<<<<<<<<<<<<<
+ *                 self.proxies[a] = self.proxies[a].replace("\r", "")             # <<<<<<<<<<<<<<
+ *             print "{} Proxies Loaded..".format(len(self.proxies))
  *         except:
- *             print """
  */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 56, __pyx_L3_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_5, __pyx_v_a, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 56, __pyx_L3_error)
+        __pyx_t_4 = __Pyx_GetItemInt(__pyx_t_5, __pyx_v_a, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_replace); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 56, __pyx_L3_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_replace); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 56, __pyx_L3_error)
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_4);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 56, __pyx_L3_error)
+        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_5);
-        if (unlikely(__Pyx_SetItemInt(__pyx_t_5, __pyx_v_a, __pyx_t_4, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1) < 0)) __PYX_ERR(0, 56, __pyx_L3_error)
+        if (unlikely(__Pyx_SetItemInt(__pyx_t_5, __pyx_v_a, __pyx_t_4, Py_ssize_t, 1, PyInt_FromSsize_t, 0, 1, 1) < 0)) __PYX_ERR(0, 53, __pyx_L3_error)
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       }
 
-      /* "proxychecker/proxycheckercython.pyx":51
- *         pass
- *     def _load_proxy_from_file(self,filename):
+      /* "proxychecker/proxycheckercython.pyx":54
+ *             for a in range(0, len(self.proxies)):
+ *                 self.proxies[a] = self.proxies[a].replace("\r", "")
+ *             print "{} Proxies Loaded..".format(len(self.proxies))             # <<<<<<<<<<<<<<
+ *         except:
+ *             print """
+ */
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Proxies_Loaded, __pyx_n_s_format); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_15 = PyObject_Length(__pyx_t_7); if (unlikely(__pyx_t_15 == ((Py_ssize_t)-1))) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      __pyx_t_7 = PyInt_FromSsize_t(__pyx_t_15); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_GOTREF(__pyx_t_7);
+      __pyx_t_8 = NULL;
+      if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
+        __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_5);
+        if (likely(__pyx_t_8)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+          __Pyx_INCREF(__pyx_t_8);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_5, function);
+        }
+      }
+      __pyx_t_4 = (__pyx_t_8) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_8, __pyx_t_7) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_7);
+      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+      if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      if (__Pyx_PrintOne(0, __pyx_t_4) < 0) __PYX_ERR(0, 54, __pyx_L3_error)
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+
+      /* "proxychecker/proxycheckercython.pyx":48
+ * 
+ *     def _load_proxy_from_file(self, filename):
  *         try:             # <<<<<<<<<<<<<<
  *             with open(filename, "r") as f:
  *                 self.proxies = f.read().split("\n")
@@ -3215,28 +2888,28 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-    /* "proxychecker/proxycheckercython.pyx":57
- *             for a in range(0, len(self.proxies)):
- *                 self.proxies[a] =self.proxies[a].replace("\r", "")
+    /* "proxychecker/proxycheckercython.pyx":55
+ *                 self.proxies[a] = self.proxies[a].replace("\r", "")
+ *             print "{} Proxies Loaded..".format(len(self.proxies))
  *         except:             # <<<<<<<<<<<<<<
  *             print """
  *             invalid input file:-this propbably means no proxy is present in file or format of proxy file is incorrect
  */
     /*except:*/ {
       __Pyx_AddTraceback("proxychecker.proxycheckercython.Checker._load_proxy_from_file", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_5, &__pyx_t_7) < 0) __PYX_ERR(0, 57, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_5, &__pyx_t_7) < 0) __PYX_ERR(0, 55, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "proxychecker/proxycheckercython.pyx":58
- *                 self.proxies[a] =self.proxies[a].replace("\r", "")
+      /* "proxychecker/proxycheckercython.pyx":56
+ *             print "{} Proxies Loaded..".format(len(self.proxies))
  *         except:
  *             print """             # <<<<<<<<<<<<<<
  *             invalid input file:-this propbably means no proxy is present in file or format of proxy file is incorrect
  *             format of proxy file should be like:-
  */
-      if (__Pyx_PrintOne(0, __pyx_kp_s_invalid_input_file_this_propbab) < 0) __PYX_ERR(0, 58, __pyx_L5_except_error)
+      if (__Pyx_PrintOne(0, __pyx_kp_s_invalid_input_file_this_propbab) < 0) __PYX_ERR(0, 56, __pyx_L5_except_error)
       __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -3244,9 +2917,9 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
     }
     __pyx_L5_except_error:;
 
-    /* "proxychecker/proxycheckercython.pyx":51
- *         pass
- *     def _load_proxy_from_file(self,filename):
+    /* "proxychecker/proxycheckercython.pyx":48
+ * 
+ *     def _load_proxy_from_file(self, filename):
  *         try:             # <<<<<<<<<<<<<<
  *             with open(filename, "r") as f:
  *                 self.proxies = f.read().split("\n")
@@ -3264,10 +2937,10 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
     __pyx_L8_try_end:;
   }
 
-  /* "proxychecker/proxycheckercython.pyx":50
- *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
+  /* "proxychecker/proxycheckercython.pyx":47
  *         pass
- *     def _load_proxy_from_file(self,filename):             # <<<<<<<<<<<<<<
+ * 
+ *     def _load_proxy_from_file(self, filename):             # <<<<<<<<<<<<<<
  *         try:
  *             with open(filename, "r") as f:
  */
@@ -3289,9 +2962,9 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_2_load_pr
   return __pyx_r;
 }
 
-/* "proxychecker/proxycheckercython.pyx":69
- *             202.162.197.28:80
+/* "proxychecker/proxycheckercython.pyx":68
  *             """
+ * 
  *     def start_checking(self):             # <<<<<<<<<<<<<<
  *         from tqdm import tqdm
  * 
@@ -3313,6 +2986,7 @@ static PyObject *__pyx_pw_12proxychecker_18proxycheckercython_7Checker_5start_ch
 
 static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_checking(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_self) {
   PyObject *__pyx_v_tqdm = NULL;
+  PyObject *__pyx_v_fil = NULL;
   PyObject *__pyx_v_i = NULL;
   PyObject *__pyx_v_a = NULL;
   PyObject *__pyx_r = NULL;
@@ -3324,47 +2998,69 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_ch
   PyObject *__pyx_t_5 = NULL;
   PyObject *(*__pyx_t_6)(PyObject *);
   PyObject *__pyx_t_7 = NULL;
-  PyObject *__pyx_t_8 = NULL;
-  int __pyx_t_9;
-  PyObject *__pyx_t_10 = NULL;
+  int __pyx_t_8;
+  PyObject *__pyx_t_9 = NULL;
   __Pyx_RefNannySetupContext("start_checking", 0);
 
-  /* "proxychecker/proxycheckercython.pyx":70
- *             """
+  /* "proxychecker/proxycheckercython.pyx":69
+ * 
  *     def start_checking(self):
  *         from tqdm import tqdm             # <<<<<<<<<<<<<<
  * 
  *         print """
  */
-  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_n_s_tqdm);
   __Pyx_GIVEREF(__pyx_n_s_tqdm);
   PyList_SET_ITEM(__pyx_t_1, 0, __pyx_n_s_tqdm);
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_tqdm, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_tqdm, __pyx_t_1, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_tqdm); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 70, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_ImportFrom(__pyx_t_2, __pyx_n_s_tqdm); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_t_1);
   __pyx_v_tqdm = __pyx_t_1;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":72
+  /* "proxychecker/proxycheckercython.pyx":71
  *         from tqdm import tqdm
  * 
  *         print """             # <<<<<<<<<<<<<<
  * ______________________________________Proxy Checker 1.0________________________________________________
  *             Maximum Threads Spawned!\xF0\x9F\x98\x81
  */
-  if (__Pyx_PrintOne(0, __pyx_kp_s__9) < 0) __PYX_ERR(0, 72, __pyx_L1_error)
+  if (__Pyx_PrintOne(0, __pyx_kp_s__9) < 0) __PYX_ERR(0, 71, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":82
+  /* "proxychecker/proxycheckercython.pyx":81
  * 
  *             Status:[\xE2\x9C\x85]\n"""
+ *         fil=open(self.outputfile, "a")             # <<<<<<<<<<<<<<
+ *         for i in tqdm(range(0, len(self.proxies))):
+ *             a = Threader(self.proxies[i],fil)
+ */
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_outputfile); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2);
+  __Pyx_INCREF(__pyx_n_s_a);
+  __Pyx_GIVEREF(__pyx_n_s_a);
+  PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_n_s_a);
+  __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_open, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_fil = __pyx_t_2;
+  __pyx_t_2 = 0;
+
+  /* "proxychecker/proxycheckercython.pyx":82
+ *             Status:[\xE2\x9C\x85]\n"""
+ *         fil=open(self.outputfile, "a")
  *         for i in tqdm(range(0, len(self.proxies))):             # <<<<<<<<<<<<<<
- *             a = Threader(self.proxies[i],self.outputfile)
+ *             a = Threader(self.proxies[i],fil)
  *             a.start()
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_proxies); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
@@ -3445,11 +3141,11 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_ch
     __pyx_t_2 = 0;
 
     /* "proxychecker/proxycheckercython.pyx":83
- *             Status:[\xE2\x9C\x85]\n"""
+ *         fil=open(self.outputfile, "a")
  *         for i in tqdm(range(0, len(self.proxies))):
- *             a = Threader(self.proxies[i],self.outputfile)             # <<<<<<<<<<<<<<
+ *             a = Threader(self.proxies[i],fil)             # <<<<<<<<<<<<<<
  *             a.start()
- *             a.join(0.0005)
+ *             a.join(0.00005)
  */
     __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_Threader); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
@@ -3458,55 +3154,51 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_ch
     __pyx_t_7 = __Pyx_PyObject_GetItem(__pyx_t_5, __pyx_v_i); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 83, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_self, __pyx_n_s_outputfile); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 83, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_8 = NULL;
-    __pyx_t_9 = 0;
+    __pyx_t_5 = NULL;
+    __pyx_t_8 = 0;
     if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_1))) {
-      __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_1);
-      if (likely(__pyx_t_8)) {
+      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_1);
+      if (likely(__pyx_t_5)) {
         PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-        __Pyx_INCREF(__pyx_t_8);
+        __Pyx_INCREF(__pyx_t_5);
         __Pyx_INCREF(function);
         __Pyx_DECREF_SET(__pyx_t_1, function);
-        __pyx_t_9 = 1;
+        __pyx_t_8 = 1;
       }
     }
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
-      PyObject *__pyx_temp[3] = {__pyx_t_8, __pyx_t_7, __pyx_t_5};
-      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
-      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_7, __pyx_v_fil};
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else
     #endif
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
-      PyObject *__pyx_temp[3] = {__pyx_t_8, __pyx_t_7, __pyx_t_5};
-      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_9, 2+__pyx_t_9); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
-      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_7, __pyx_v_fil};
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     } else
     #endif
     {
-      __pyx_t_10 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 83, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_10);
-      if (__pyx_t_8) {
-        __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_8); __pyx_t_8 = NULL;
+      __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 83, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_9);
+      if (__pyx_t_5) {
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_5); __pyx_t_5 = NULL;
       }
       __Pyx_GIVEREF(__pyx_t_7);
-      PyTuple_SET_ITEM(__pyx_t_10, 0+__pyx_t_9, __pyx_t_7);
-      __Pyx_GIVEREF(__pyx_t_5);
-      PyTuple_SET_ITEM(__pyx_t_10, 1+__pyx_t_9, __pyx_t_5);
+      PyTuple_SET_ITEM(__pyx_t_9, 0+__pyx_t_8, __pyx_t_7);
+      __Pyx_INCREF(__pyx_v_fil);
+      __Pyx_GIVEREF(__pyx_v_fil);
+      PyTuple_SET_ITEM(__pyx_t_9, 1+__pyx_t_8, __pyx_v_fil);
       __pyx_t_7 = 0;
-      __pyx_t_5 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_10, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 83, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_XDECREF_SET(__pyx_v_a, __pyx_t_2);
@@ -3514,69 +3206,69 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_ch
 
     /* "proxychecker/proxycheckercython.pyx":84
  *         for i in tqdm(range(0, len(self.proxies))):
- *             a = Threader(self.proxies[i],self.outputfile)
+ *             a = Threader(self.proxies[i],fil)
  *             a.start()             # <<<<<<<<<<<<<<
- *             a.join(0.0005)
+ *             a.join(0.00005)
  * 
  */
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_start); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_10 = NULL;
+    __pyx_t_9 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
-      __pyx_t_10 = PyMethod_GET_SELF(__pyx_t_1);
-      if (likely(__pyx_t_10)) {
+      __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_1);
+      if (likely(__pyx_t_9)) {
         PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-        __Pyx_INCREF(__pyx_t_10);
+        __Pyx_INCREF(__pyx_t_9);
         __Pyx_INCREF(function);
         __Pyx_DECREF_SET(__pyx_t_1, function);
       }
     }
-    __pyx_t_2 = (__pyx_t_10) ? __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_10) : __Pyx_PyObject_CallNoArg(__pyx_t_1);
-    __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+    __pyx_t_2 = (__pyx_t_9) ? __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_9) : __Pyx_PyObject_CallNoArg(__pyx_t_1);
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
     /* "proxychecker/proxycheckercython.pyx":85
- *             a = Threader(self.proxies[i],self.outputfile)
+ *             a = Threader(self.proxies[i],fil)
  *             a.start()
- *             a.join(0.0005)             # <<<<<<<<<<<<<<
+ *             a.join(0.00005)             # <<<<<<<<<<<<<<
  * 
  * 
  */
     __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_join); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_10 = NULL;
+    __pyx_t_9 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
-      __pyx_t_10 = PyMethod_GET_SELF(__pyx_t_1);
-      if (likely(__pyx_t_10)) {
+      __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_1);
+      if (likely(__pyx_t_9)) {
         PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-        __Pyx_INCREF(__pyx_t_10);
+        __Pyx_INCREF(__pyx_t_9);
         __Pyx_INCREF(function);
         __Pyx_DECREF_SET(__pyx_t_1, function);
       }
     }
-    __pyx_t_2 = (__pyx_t_10) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_10, __pyx_float_0_0005) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_float_0_0005);
-    __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
+    __pyx_t_2 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_9, __pyx_float_0_00005) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_float_0_00005);
+    __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 85, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
     /* "proxychecker/proxycheckercython.pyx":82
- * 
  *             Status:[\xE2\x9C\x85]\n"""
+ *         fil=open(self.outputfile, "a")
  *         for i in tqdm(range(0, len(self.proxies))):             # <<<<<<<<<<<<<<
- *             a = Threader(self.proxies[i],self.outputfile)
+ *             a = Threader(self.proxies[i],fil)
  *             a.start()
  */
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":69
- *             202.162.197.28:80
+  /* "proxychecker/proxycheckercython.pyx":68
  *             """
+ * 
  *     def start_checking(self):             # <<<<<<<<<<<<<<
  *         from tqdm import tqdm
  * 
@@ -3591,12 +3283,12 @@ static PyObject *__pyx_pf_12proxychecker_18proxycheckercython_7Checker_4start_ch
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_XDECREF(__pyx_t_10);
+  __Pyx_XDECREF(__pyx_t_9);
   __Pyx_AddTraceback("proxychecker.proxycheckercython.Checker.start_checking", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tqdm);
+  __Pyx_XDECREF(__pyx_v_fil);
   __Pyx_XDECREF(__pyx_v_i);
   __Pyx_XDECREF(__pyx_v_a);
   __Pyx_XGIVEREF(__pyx_r);
@@ -3654,6 +3346,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_Checker___init, __pyx_k_Checker___init, sizeof(__pyx_k_Checker___init), 0, 0, 1, 1},
   {&__pyx_n_s_Checker__load_proxy_from_file, __pyx_k_Checker__load_proxy_from_file, sizeof(__pyx_k_Checker__load_proxy_from_file), 0, 0, 1, 1},
   {&__pyx_n_s_Checker_start_checking, __pyx_k_Checker_start_checking, sizeof(__pyx_k_Checker_start_checking), 0, 0, 1, 1},
+  {&__pyx_kp_s_Proxies_Loaded, __pyx_k_Proxies_Loaded, sizeof(__pyx_k_Proxies_Loaded), 0, 0, 1, 0},
   {&__pyx_n_s_ProxyChecker, __pyx_k_ProxyChecker, sizeof(__pyx_k_ProxyChecker), 0, 0, 1, 1},
   {&__pyx_n_s_ProxyChecker___init, __pyx_k_ProxyChecker___init, sizeof(__pyx_k_ProxyChecker___init), 0, 0, 1, 1},
   {&__pyx_n_s_ProxyChecker_check, __pyx_k_ProxyChecker_check, sizeof(__pyx_k_ProxyChecker_check), 0, 0, 1, 1},
@@ -3666,7 +3359,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s__2, __pyx_k__2, sizeof(__pyx_k__2), 0, 0, 1, 0},
   {&__pyx_kp_s__25, __pyx_k__25, sizeof(__pyx_k__25), 0, 0, 1, 0},
   {&__pyx_kp_s__26, __pyx_k__26, sizeof(__pyx_k__26), 0, 0, 1, 0},
-  {&__pyx_kp_s__4, __pyx_k__4, sizeof(__pyx_k__4), 0, 0, 1, 0},
+  {&__pyx_kp_s__3, __pyx_k__3, sizeof(__pyx_k__3), 0, 0, 1, 0},
   {&__pyx_kp_s__6, __pyx_k__6, sizeof(__pyx_k__6), 0, 0, 1, 0},
   #if PY_MAJOR_VERSION >= 3
   {&__pyx_kp_s__9, __pyx_k__8, sizeof(__pyx_k__8), 0, 1, 0, 0},
@@ -3685,6 +3378,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_enter, __pyx_k_enter, sizeof(__pyx_k_enter), 0, 0, 1, 1},
   {&__pyx_n_s_exit, __pyx_k_exit, sizeof(__pyx_k_exit), 0, 0, 1, 1},
   {&__pyx_n_s_f, __pyx_k_f, sizeof(__pyx_k_f), 0, 0, 1, 1},
+  {&__pyx_n_s_fhandler, __pyx_k_fhandler, sizeof(__pyx_k_fhandler), 0, 0, 1, 1},
+  {&__pyx_n_s_fhandler_2, __pyx_k_fhandler_2, sizeof(__pyx_k_fhandler_2), 0, 0, 1, 1},
+  {&__pyx_n_s_fil, __pyx_k_fil, sizeof(__pyx_k_fil), 0, 0, 1, 1},
   {&__pyx_n_s_file, __pyx_k_file, sizeof(__pyx_k_file), 0, 0, 1, 1},
   {&__pyx_n_s_filename, __pyx_k_filename, sizeof(__pyx_k_filename), 0, 0, 1, 1},
   {&__pyx_n_s_format, __pyx_k_format, sizeof(__pyx_k_format), 0, 0, 1, 1},
@@ -3711,7 +3407,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_metaclass, __pyx_k_metaclass, sizeof(__pyx_k_metaclass), 0, 0, 1, 1},
   {&__pyx_n_s_module, __pyx_k_module, sizeof(__pyx_k_module), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
-  {&__pyx_n_s_once, __pyx_k_once, sizeof(__pyx_k_once), 0, 0, 1, 1},
   {&__pyx_n_s_open, __pyx_k_open, sizeof(__pyx_k_open), 0, 0, 1, 1},
   {&__pyx_n_s_outputfile, __pyx_k_outputfile, sizeof(__pyx_k_outputfile), 0, 0, 1, 1},
   {&__pyx_n_s_outputproxyfile, __pyx_k_outputproxyfile, sizeof(__pyx_k_outputproxyfile), 0, 0, 1, 1},
@@ -3741,7 +3436,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_timeout, __pyx_k_timeout, sizeof(__pyx_k_timeout), 0, 0, 1, 1},
   {&__pyx_n_s_tqdm, __pyx_k_tqdm, sizeof(__pyx_k_tqdm), 0, 0, 1, 1},
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
-  {&__pyx_n_s_w, __pyx_k_w, sizeof(__pyx_k_w), 0, 0, 1, 1},
   {&__pyx_n_s_write, __pyx_k_write, sizeof(__pyx_k_write), 0, 0, 1, 1},
   {&__pyx_kp_s_wrong_arguments_format_it_should, __pyx_k_wrong_arguments_format_it_should, sizeof(__pyx_k_wrong_arguments_format_it_should), 0, 0, 1, 0},
   {0, 0, 0, 0, 0, 0, 0}
@@ -3749,7 +3443,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
   __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 121, __pyx_L1_error)
   __pyx_builtin_super = __Pyx_GetBuiltinName(__pyx_n_s_super); if (!__pyx_builtin_super) __PYX_ERR(0, 24, __pyx_L1_error)
-  __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_n_s_open); if (!__pyx_builtin_open) __PYX_ERR(0, 33, __pyx_L1_error)
+  __pyx_builtin_open = __Pyx_GetBuiltinName(__pyx_n_s_open); if (!__pyx_builtin_open) __PYX_ERR(0, 49, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -3762,7 +3456,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "proxychecker/proxycheckercython.pyx":16
  *         }
  *         try:
- *             if (get("https://www.google.com", proxies=proxies, timeout=9).content):             # <<<<<<<<<<<<<<
+ *             if (get("https://www.google.com", proxies=proxies, timeout=7).content):             # <<<<<<<<<<<<<<
  *                 return True
  *         except:
  */
@@ -3770,36 +3464,36 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "proxychecker/proxycheckercython.pyx":33
- *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
- *                 with open(self.outputfile,"w") as f:             # <<<<<<<<<<<<<<
- *                     f.write(self.proxy+"\n")
- *                 self._once=self._once+1
- */
-  __pyx_tuple__3 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 33, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__3);
-  __Pyx_GIVEREF(__pyx_tuple__3);
-
-  /* "proxychecker/proxycheckercython.pyx":48
+  /* "proxychecker/proxycheckercython.pyx":44
  *             self._load_proxy_from_file(inputfile)
- *         if(len(proxies)==0 and inputfile==""):
+ *         if (len(proxies) == 0 and inputfile == ""):
  *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")             # <<<<<<<<<<<<<<
  *         pass
- *     def _load_proxy_from_file(self,filename):
+ * 
  */
-  __pyx_tuple__5 = PyTuple_Pack(1, __pyx_kp_s_Proxy_List_Not_Provided_pass_inp); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 48, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_kp_s_Proxy_List_Not_Provided_pass_inp); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__4);
+  __Pyx_GIVEREF(__pyx_tuple__4);
+
+  /* "proxychecker/proxycheckercython.pyx":49
+ *     def _load_proxy_from_file(self, filename):
+ *         try:
+ *             with open(filename, "r") as f:             # <<<<<<<<<<<<<<
+ *                 self.proxies = f.read().split("\n")
+ * 
+ */
+  __pyx_tuple__5 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
 
-  /* "proxychecker/proxycheckercython.pyx":56
+  /* "proxychecker/proxycheckercython.pyx":53
  * 
  *             for a in range(0, len(self.proxies)):
- *                 self.proxies[a] =self.proxies[a].replace("\r", "")             # <<<<<<<<<<<<<<
+ *                 self.proxies[a] = self.proxies[a].replace("\r", "")             # <<<<<<<<<<<<<<
+ *             print "{} Proxies Loaded..".format(len(self.proxies))
  *         except:
- *             print """
  */
-  __pyx_tuple__7 = PyTuple_Pack(2, __pyx_kp_s__6, __pyx_kp_s__4); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_tuple__7 = PyTuple_Pack(2, __pyx_kp_s__6, __pyx_kp_s__3); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
   __Pyx_GIVEREF(__pyx_tuple__7);
 
@@ -3818,7 +3512,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "proxychecker/proxycheckercython.pyx":9
  *         pass
  * 
- *     def check(self,link):             # <<<<<<<<<<<<<<
+ *     def check(self, link):             # <<<<<<<<<<<<<<
  *         p = link
  *         proxies = {
  */
@@ -3830,68 +3524,68 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "proxychecker/proxycheckercython.pyx":23
  * 
  * class Threader(Thread):
- *     def __init__(self,proxy,outputfile):             # <<<<<<<<<<<<<<
+ *     def __init__(self, proxy,fhandler):             # <<<<<<<<<<<<<<
  *         super(Threader, self).__init__()
- *         self.proxy=proxy
+ *         self.proxy = proxy
  */
-  __pyx_tuple__14 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_proxy, __pyx_n_s_outputfile); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_proxy, __pyx_n_s_fhandler); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
   __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_init, 23, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 23, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":30
+  /* "proxychecker/proxycheckercython.pyx":29
  * 
  * 
  *     def run(self):             # <<<<<<<<<<<<<<
  *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
+ *             self._fhandler.write(self.proxy + "\n")
  */
-  __pyx_tuple__16 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_f); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
-  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_run, 30, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_run, 29, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 29, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":42
+  /* "proxychecker/proxycheckercython.pyx":38
  * 
  * class Checker():
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
- *         self.proxies=proxies
- *         self.outputfile=outputfile
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
  */
-  __pyx_tuple__18 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_proxies, __pyx_n_s_inputfile, __pyx_n_s_outputfile); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_tuple__18 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_proxies, __pyx_n_s_inputfile, __pyx_n_s_outputfile); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(4, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_init, 42, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(4, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_init, 38, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 38, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":50
- *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
+  /* "proxychecker/proxycheckercython.pyx":47
  *         pass
- *     def _load_proxy_from_file(self,filename):             # <<<<<<<<<<<<<<
+ * 
+ *     def _load_proxy_from_file(self, filename):             # <<<<<<<<<<<<<<
  *         try:
  *             with open(filename, "r") as f:
  */
-  __pyx_tuple__20 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_filename, __pyx_n_s_f, __pyx_n_s_a); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_tuple__20 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_filename, __pyx_n_s_f, __pyx_n_s_a); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
-  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_load_proxy_from_file, 50, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(2, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_load_proxy_from_file, 47, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 47, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":69
- *             202.162.197.28:80
+  /* "proxychecker/proxycheckercython.pyx":68
  *             """
+ * 
  *     def start_checking(self):             # <<<<<<<<<<<<<<
  *         from tqdm import tqdm
  * 
  */
-  __pyx_tuple__22 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_tqdm, __pyx_n_s_i, __pyx_n_s_a); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 69, __pyx_L1_error)
+  __pyx_tuple__22 = PyTuple_Pack(5, __pyx_n_s_self, __pyx_n_s_tqdm, __pyx_n_s_fil, __pyx_n_s_i, __pyx_n_s_a); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
-  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_start_checking, 69, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 69, __pyx_L1_error)
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_proxycheckercython_pyx, __pyx_n_s_start_checking, 68, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 68, __pyx_L1_error)
 
   /* "proxychecker/proxycheckercython.pyx":117
- * """
  * import sys
- * arguments=sys.argv[1:]             # <<<<<<<<<<<<<<
- * argumentsdict={}
+ * 
+ * arguments = sys.argv[1:]             # <<<<<<<<<<<<<<
+ * argumentsdict = {}
  * # print arguments
  */
   __pyx_slice__24 = PySlice_New(__pyx_int_1, Py_None, Py_None); if (unlikely(!__pyx_slice__24)) __PYX_ERR(0, 117, __pyx_L1_error)
@@ -3906,10 +3600,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
 static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  __pyx_float_0_0005 = PyFloat_FromDouble(0.0005); if (unlikely(!__pyx_float_0_0005)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_float_0_00005 = PyFloat_FromDouble(0.00005); if (unlikely(!__pyx_float_0_00005)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_0 = PyInt_FromLong(0); if (unlikely(!__pyx_int_0)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_1 = PyInt_FromLong(1); if (unlikely(!__pyx_int_1)) __PYX_ERR(0, 1, __pyx_L1_error)
-  __pyx_int_9 = PyInt_FromLong(9); if (unlikely(!__pyx_int_9)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_int_7 = PyInt_FromLong(7); if (unlikely(!__pyx_int_7)) __PYX_ERR(0, 1, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -4195,7 +3889,7 @@ if (!__Pyx_RefNanny) {
 
   /* "proxychecker/proxycheckercython.pyx":1
  * from threading import Thread             # <<<<<<<<<<<<<<
- * from  requests import get
+ * from requests import get
  * 
  */
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -4214,7 +3908,7 @@ if (!__Pyx_RefNanny) {
 
   /* "proxychecker/proxycheckercython.pyx":2
  * from threading import Thread
- * from  requests import get             # <<<<<<<<<<<<<<
+ * from requests import get             # <<<<<<<<<<<<<<
  * 
  * 
  */
@@ -4257,7 +3951,7 @@ if (!__Pyx_RefNanny) {
   /* "proxychecker/proxycheckercython.pyx":9
  *         pass
  * 
- *     def check(self,link):             # <<<<<<<<<<<<<<
+ *     def check(self, link):             # <<<<<<<<<<<<<<
  *         p = link
  *         proxies = {
  */
@@ -4283,7 +3977,7 @@ if (!__Pyx_RefNanny) {
  * 
  * 
  * class Threader(Thread):             # <<<<<<<<<<<<<<
- *     def __init__(self,proxy,outputfile):
+ *     def __init__(self, proxy,fhandler):
  *         super(Threader, self).__init__()
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_Thread); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
@@ -4301,32 +3995,32 @@ if (!__Pyx_RefNanny) {
   /* "proxychecker/proxycheckercython.pyx":23
  * 
  * class Threader(Thread):
- *     def __init__(self,proxy,outputfile):             # <<<<<<<<<<<<<<
+ *     def __init__(self, proxy,fhandler):             # <<<<<<<<<<<<<<
  *         super(Threader, self).__init__()
- *         self.proxy=proxy
+ *         self.proxy = proxy
  */
   __pyx_t_4 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_8Threader_1__init__, 0, __pyx_n_s_Threader___init, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__15)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_init, __pyx_t_4) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":30
+  /* "proxychecker/proxycheckercython.pyx":29
  * 
  * 
  *     def run(self):             # <<<<<<<<<<<<<<
  *         if ProxyChecker().check(self.proxy):
- *             if self._once==0:
+ *             self._fhandler.write(self.proxy + "\n")
  */
-  __pyx_t_4 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_8Threader_3run, 0, __pyx_n_s_Threader_run, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__17)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_8Threader_3run, 0, __pyx_n_s_Threader_run, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__17)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_run, __pyx_t_4) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_3, __pyx_n_s_run, __pyx_t_4) < 0) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
   /* "proxychecker/proxycheckercython.pyx":22
  * 
  * 
  * class Threader(Thread):             # <<<<<<<<<<<<<<
- *     def __init__(self,proxy,outputfile):
+ *     def __init__(self, proxy,fhandler):
  *         super(Threader, self).__init__()
  */
   __pyx_t_4 = __Pyx_Py3ClassCreate(__pyx_t_1, __pyx_n_s_Threader, __pyx_t_2, __pyx_t_3, NULL, 0, 1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 22, __pyx_L1_error)
@@ -4337,98 +4031,98 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":41
+  /* "proxychecker/proxycheckercython.pyx":37
  * 
  * 
  * class Checker():             # <<<<<<<<<<<<<<
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):
- *         self.proxies=proxies
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):
+ *         self.proxies = proxies
  */
-  __pyx_t_2 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_Checker, __pyx_n_s_Checker, (PyObject *) NULL, __pyx_n_s_proxychecker_proxycheckercython, (PyObject *) NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Py3MetaclassPrepare((PyObject *) NULL, __pyx_empty_tuple, __pyx_n_s_Checker, __pyx_n_s_Checker, (PyObject *) NULL, __pyx_n_s_proxychecker_proxycheckercython, (PyObject *) NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
-  /* "proxychecker/proxycheckercython.pyx":42
+  /* "proxychecker/proxycheckercython.pyx":38
  * 
  * class Checker():
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
- *         self.proxies=proxies
- *         self.outputfile=outputfile
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):             # <<<<<<<<<<<<<<
+ *         self.proxies = proxies
+ *         self.outputfile = outputfile
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_1__init__, 0, __pyx_n_s_Checker___init, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__19)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_1__init__, 0, __pyx_n_s_Checker___init, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__19)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_1, sizeof(__pyx_defaults), 1)) __PYX_ERR(0, 42, __pyx_L1_error)
-  __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (!__Pyx_CyFunction_InitDefaults(__pyx_t_1, sizeof(__pyx_defaults), 1)) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_3 = PyList_New(0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_CyFunction_Defaults(__pyx_defaults, __pyx_t_1)->__pyx_arg_proxies = __pyx_t_3;
   __Pyx_GIVEREF(__pyx_t_3);
   __pyx_t_3 = 0;
   __Pyx_CyFunction_SetDefaultsGetter(__pyx_t_1, __pyx_pf_12proxychecker_18proxycheckercython___defaults__);
-  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_init, __pyx_t_1) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_init, __pyx_t_1) < 0) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":50
- *             raise Exception("Proxy List Not Provided! pass inputfilename=? or proxies=?")
+  /* "proxychecker/proxycheckercython.pyx":47
  *         pass
- *     def _load_proxy_from_file(self,filename):             # <<<<<<<<<<<<<<
+ * 
+ *     def _load_proxy_from_file(self, filename):             # <<<<<<<<<<<<<<
  *         try:
  *             with open(filename, "r") as f:
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_3_load_proxy_from_file, 0, __pyx_n_s_Checker__load_proxy_from_file, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__21)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 50, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_3_load_proxy_from_file, 0, __pyx_n_s_Checker__load_proxy_from_file, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__21)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_load_proxy_from_file, __pyx_t_1) < 0) __PYX_ERR(0, 50, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_load_proxy_from_file, __pyx_t_1) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":69
- *             202.162.197.28:80
+  /* "proxychecker/proxycheckercython.pyx":68
  *             """
+ * 
  *     def start_checking(self):             # <<<<<<<<<<<<<<
  *         from tqdm import tqdm
  * 
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_5start_checking, 0, __pyx_n_s_Checker_start_checking, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__23)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_12proxychecker_18proxycheckercython_7Checker_5start_checking, 0, __pyx_n_s_Checker_start_checking, NULL, __pyx_n_s_proxychecker_proxycheckercython, __pyx_d, ((PyObject *)__pyx_codeobj__23)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_start_checking, __pyx_t_1) < 0) __PYX_ERR(0, 69, __pyx_L1_error)
+  if (__Pyx_SetNameInClass(__pyx_t_2, __pyx_n_s_start_checking, __pyx_t_1) < 0) __PYX_ERR(0, 68, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":41
+  /* "proxychecker/proxycheckercython.pyx":37
  * 
  * 
  * class Checker():             # <<<<<<<<<<<<<<
- *     def __init__(self,proxies=[],inputfile="",outputfile="goodproxies.txt"):
- *         self.proxies=proxies
+ *     def __init__(self, proxies=[], inputfile="", outputfile="goodproxies.txt"):
+ *         self.proxies = proxies
  */
-  __pyx_t_1 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_Checker, __pyx_empty_tuple, __pyx_t_2, NULL, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Py3ClassCreate(((PyObject*)&__Pyx_DefaultClassType), __pyx_n_s_Checker, __pyx_empty_tuple, __pyx_t_2, NULL, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_Checker, __pyx_t_1) < 0) __PYX_ERR(0, 41, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_Checker, __pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "proxychecker/proxycheckercython.pyx":91
+  /* "proxychecker/proxycheckercython.pyx":90
  * 
  * 
- * helpinfo="""             # <<<<<<<<<<<<<<
+ * helpinfo = """             # <<<<<<<<<<<<<<
  *                         Welcome to Proxy Checker 1.0 Help Index\n
  *                             Developed by Shivansh Talwar
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_helpinfo, __pyx_kp_s_Welcome_to_Proxy_Checker_1_0_He) < 0) __PYX_ERR(0, 91, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_helpinfo, __pyx_kp_s_Welcome_to_Proxy_Checker_1_0_He) < 0) __PYX_ERR(0, 90, __pyx_L1_error)
 
-  /* "proxychecker/proxycheckercython.pyx":116
+  /* "proxychecker/proxycheckercython.pyx":115
  * 
  * """
  * import sys             # <<<<<<<<<<<<<<
- * arguments=sys.argv[1:]
- * argumentsdict={}
+ * 
+ * arguments = sys.argv[1:]
  */
-  __pyx_t_2 = __Pyx_Import(__pyx_n_s_sys, 0, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 116, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_Import(__pyx_n_s_sys, 0, -1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 115, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_2) < 0) __PYX_ERR(0, 116, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sys, __pyx_t_2) < 0) __PYX_ERR(0, 115, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "proxychecker/proxycheckercython.pyx":117
- * """
  * import sys
- * arguments=sys.argv[1:]             # <<<<<<<<<<<<<<
- * argumentsdict={}
+ * 
+ * arguments = sys.argv[1:]             # <<<<<<<<<<<<<<
+ * argumentsdict = {}
  * # print arguments
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_sys); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 117, __pyx_L1_error)
@@ -4443,9 +4137,9 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "proxychecker/proxycheckercython.pyx":118
- * import sys
- * arguments=sys.argv[1:]
- * argumentsdict={}             # <<<<<<<<<<<<<<
+ * 
+ * arguments = sys.argv[1:]
+ * argumentsdict = {}             # <<<<<<<<<<<<<<
  * # print arguments
  * try:
  */
@@ -4455,10 +4149,10 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "proxychecker/proxycheckercython.pyx":120
- * argumentsdict={}
+ * argumentsdict = {}
  * # print arguments
  * try:             # <<<<<<<<<<<<<<
- *     for a in range(0,len(arguments)):
+ *     for a in range(0, len(arguments)):
  *         # print arguments[a]
  */
   {
@@ -4473,7 +4167,7 @@ if (!__Pyx_RefNanny) {
       /* "proxychecker/proxycheckercython.pyx":121
  * # print arguments
  * try:
- *     for a in range(0,len(arguments)):             # <<<<<<<<<<<<<<
+ *     for a in range(0, len(arguments)):             # <<<<<<<<<<<<<<
  *         # print arguments[a]
  * 
  */
@@ -4542,7 +4236,7 @@ if (!__Pyx_RefNanny) {
  * 
  *         if arguments[a].startswith("--"):             # <<<<<<<<<<<<<<
  *             # print arguments[a]
- *             key=arguments[a].split("--")[1]
+ *             key = arguments[a].split("--")[1]
  */
         __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_arguments); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 124, __pyx_L2_error)
         __Pyx_GOTREF(__pyx_t_3);
@@ -4577,9 +4271,9 @@ if (!__Pyx_RefNanny) {
           /* "proxychecker/proxycheckercython.pyx":126
  *         if arguments[a].startswith("--"):
  *             # print arguments[a]
- *             key=arguments[a].split("--")[1]             # <<<<<<<<<<<<<<
+ *             key = arguments[a].split("--")[1]             # <<<<<<<<<<<<<<
  *             # print key
- *             value=arguments[a+1]
+ *             value = arguments[a + 1]
  */
           __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_arguments); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 126, __pyx_L2_error)
           __Pyx_GOTREF(__pyx_t_4);
@@ -4614,11 +4308,11 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":128
- *             key=arguments[a].split("--")[1]
+ *             key = arguments[a].split("--")[1]
  *             # print key
- *             value=arguments[a+1]             # <<<<<<<<<<<<<<
+ *             value = arguments[a + 1]             # <<<<<<<<<<<<<<
  *             # print value
- *             argumentsdict[key]=value
+ *             argumentsdict[key] = value
  */
           __Pyx_GetModuleGlobalName(__pyx_t_10, __pyx_n_s_arguments); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 128, __pyx_L2_error)
           __Pyx_GOTREF(__pyx_t_10);
@@ -4635,9 +4329,9 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":130
- *             value=arguments[a+1]
+ *             value = arguments[a + 1]
  *             # print value
- *             argumentsdict[key]=value             # <<<<<<<<<<<<<<
+ *             argumentsdict[key] = value             # <<<<<<<<<<<<<<
  *         elif arguments[a].startswith("-"):
  *             # print arguments[a]
  */
@@ -4657,17 +4351,17 @@ if (!__Pyx_RefNanny) {
  * 
  *         if arguments[a].startswith("--"):             # <<<<<<<<<<<<<<
  *             # print arguments[a]
- *             key=arguments[a].split("--")[1]
+ *             key = arguments[a].split("--")[1]
  */
           goto __pyx_L10;
         }
 
         /* "proxychecker/proxycheckercython.pyx":131
  *             # print value
- *             argumentsdict[key]=value
+ *             argumentsdict[key] = value
  *         elif arguments[a].startswith("-"):             # <<<<<<<<<<<<<<
  *             # print arguments[a]
- *             key=arguments[a].split("-")[1]
+ *             key = arguments[a].split("-")[1]
  */
         __Pyx_GetModuleGlobalName(__pyx_t_10, __pyx_n_s_arguments); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 131, __pyx_L2_error)
         __Pyx_GOTREF(__pyx_t_10);
@@ -4702,9 +4396,9 @@ if (!__Pyx_RefNanny) {
           /* "proxychecker/proxycheckercython.pyx":133
  *         elif arguments[a].startswith("-"):
  *             # print arguments[a]
- *             key=arguments[a].split("-")[1]             # <<<<<<<<<<<<<<
+ *             key = arguments[a].split("-")[1]             # <<<<<<<<<<<<<<
  *             # print key
- *             value=arguments[a+1]
+ *             value = arguments[a + 1]
  */
           __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_arguments); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 133, __pyx_L2_error)
           __Pyx_GOTREF(__pyx_t_3);
@@ -4739,11 +4433,11 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":135
- *             key=arguments[a].split("-")[1]
+ *             key = arguments[a].split("-")[1]
  *             # print key
- *             value=arguments[a+1]             # <<<<<<<<<<<<<<
+ *             value = arguments[a + 1]             # <<<<<<<<<<<<<<
  *             # print value
- *             argumentsdict[key]=value
+ *             argumentsdict[key] = value
  */
           __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_arguments); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 135, __pyx_L2_error)
           __Pyx_GOTREF(__pyx_t_4);
@@ -4760,9 +4454,9 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":137
- *             value=arguments[a+1]
+ *             value = arguments[a + 1]
  *             # print value
- *             argumentsdict[key]=value             # <<<<<<<<<<<<<<
+ *             argumentsdict[key] = value             # <<<<<<<<<<<<<<
  *         elif "--help" in arguments:
  *             pass
  */
@@ -4779,17 +4473,17 @@ if (!__Pyx_RefNanny) {
 
           /* "proxychecker/proxycheckercython.pyx":131
  *             # print value
- *             argumentsdict[key]=value
+ *             argumentsdict[key] = value
  *         elif arguments[a].startswith("-"):             # <<<<<<<<<<<<<<
  *             # print arguments[a]
- *             key=arguments[a].split("-")[1]
+ *             key = arguments[a].split("-")[1]
  */
           goto __pyx_L10;
         }
 
         /* "proxychecker/proxycheckercython.pyx":138
  *             # print value
- *             argumentsdict[key]=value
+ *             argumentsdict[key] = value
  *         elif "--help" in arguments:             # <<<<<<<<<<<<<<
  *             pass
  * 
@@ -4806,7 +4500,7 @@ if (!__Pyx_RefNanny) {
         /* "proxychecker/proxycheckercython.pyx":121
  * # print arguments
  * try:
- *     for a in range(0,len(arguments)):             # <<<<<<<<<<<<<<
+ *     for a in range(0, len(arguments)):             # <<<<<<<<<<<<<<
  *         # print arguments[a]
  * 
  */
@@ -4814,10 +4508,10 @@ if (!__Pyx_RefNanny) {
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
       /* "proxychecker/proxycheckercython.pyx":120
- * argumentsdict={}
+ * argumentsdict = {}
  * # print arguments
  * try:             # <<<<<<<<<<<<<<
- *     for a in range(0,len(arguments)):
+ *     for a in range(0, len(arguments)):
  *         # print arguments[a]
  */
     }
@@ -4881,10 +4575,10 @@ if (!__Pyx_RefNanny) {
     __pyx_L4_except_error:;
 
     /* "proxychecker/proxycheckercython.pyx":120
- * argumentsdict={}
+ * argumentsdict = {}
  * # print arguments
  * try:             # <<<<<<<<<<<<<<
- *     for a in range(0,len(arguments)):
+ *     for a in range(0, len(arguments)):
  *         # print arguments[a]
  */
     __Pyx_XGIVEREF(__pyx_t_5);
@@ -4904,7 +4598,7 @@ if (!__Pyx_RefNanny) {
  * # print argumentsdict
  * 
  * try:             # <<<<<<<<<<<<<<
- *     help=argumentsdict['help']
+ *     help = argumentsdict['help']
  *     print helpinfo
  */
   {
@@ -4919,7 +4613,7 @@ if (!__Pyx_RefNanny) {
       /* "proxychecker/proxycheckercython.pyx":150
  * 
  * try:
- *     help=argumentsdict['help']             # <<<<<<<<<<<<<<
+ *     help = argumentsdict['help']             # <<<<<<<<<<<<<<
  *     print helpinfo
  * except:
  */
@@ -4933,7 +4627,7 @@ if (!__Pyx_RefNanny) {
 
       /* "proxychecker/proxycheckercython.pyx":151
  * try:
- *     help=argumentsdict['help']
+ *     help = argumentsdict['help']
  *     print helpinfo             # <<<<<<<<<<<<<<
  * except:
  * 
@@ -4947,7 +4641,7 @@ if (!__Pyx_RefNanny) {
  * # print argumentsdict
  * 
  * try:             # <<<<<<<<<<<<<<
- *     help=argumentsdict['help']
+ *     help = argumentsdict['help']
  *     print helpinfo
  */
     }
@@ -4963,7 +4657,7 @@ if (!__Pyx_RefNanny) {
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
 
     /* "proxychecker/proxycheckercython.pyx":152
- *     help=argumentsdict['help']
+ *     help = argumentsdict['help']
  *     print helpinfo
  * except:             # <<<<<<<<<<<<<<
  * 
@@ -4980,8 +4674,8 @@ if (!__Pyx_RefNanny) {
  * except:
  * 
  *     try:             # <<<<<<<<<<<<<<
- *         inputproxyfile=argumentsdict['inputproxyfile']
- *         outputproxyfile=argumentsdict['outputproxyfile']
+ *         inputproxyfile = argumentsdict['inputproxyfile']
+ *         outputproxyfile = argumentsdict['outputproxyfile']
  */
       {
         __Pyx_PyThreadState_declare
@@ -4995,9 +4689,9 @@ if (!__Pyx_RefNanny) {
           /* "proxychecker/proxycheckercython.pyx":155
  * 
  *     try:
- *         inputproxyfile=argumentsdict['inputproxyfile']             # <<<<<<<<<<<<<<
- *         outputproxyfile=argumentsdict['outputproxyfile']
- *         check=Checker(inputfile=inputproxyfile,outputfile=outputproxyfile)
+ *         inputproxyfile = argumentsdict['inputproxyfile']             # <<<<<<<<<<<<<<
+ *         outputproxyfile = argumentsdict['outputproxyfile']
+ *         check = Checker(inputfile=inputproxyfile, outputfile=outputproxyfile)
  */
           __Pyx_GetModuleGlobalName(__pyx_t_10, __pyx_n_s_argumentsdict); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 155, __pyx_L22_error)
           __Pyx_GOTREF(__pyx_t_10);
@@ -5009,9 +4703,9 @@ if (!__Pyx_RefNanny) {
 
           /* "proxychecker/proxycheckercython.pyx":156
  *     try:
- *         inputproxyfile=argumentsdict['inputproxyfile']
- *         outputproxyfile=argumentsdict['outputproxyfile']             # <<<<<<<<<<<<<<
- *         check=Checker(inputfile=inputproxyfile,outputfile=outputproxyfile)
+ *         inputproxyfile = argumentsdict['inputproxyfile']
+ *         outputproxyfile = argumentsdict['outputproxyfile']             # <<<<<<<<<<<<<<
+ *         check = Checker(inputfile=inputproxyfile, outputfile=outputproxyfile)
  *         check.start_checking()
  */
           __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_argumentsdict); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 156, __pyx_L22_error)
@@ -5023,9 +4717,9 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":157
- *         inputproxyfile=argumentsdict['inputproxyfile']
- *         outputproxyfile=argumentsdict['outputproxyfile']
- *         check=Checker(inputfile=inputproxyfile,outputfile=outputproxyfile)             # <<<<<<<<<<<<<<
+ *         inputproxyfile = argumentsdict['inputproxyfile']
+ *         outputproxyfile = argumentsdict['outputproxyfile']
+ *         check = Checker(inputfile=inputproxyfile, outputfile=outputproxyfile)             # <<<<<<<<<<<<<<
  *         check.start_checking()
  *     except:
  */
@@ -5049,8 +4743,8 @@ if (!__Pyx_RefNanny) {
           __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
 
           /* "proxychecker/proxycheckercython.pyx":158
- *         outputproxyfile=argumentsdict['outputproxyfile']
- *         check=Checker(inputfile=inputproxyfile,outputfile=outputproxyfile)
+ *         outputproxyfile = argumentsdict['outputproxyfile']
+ *         check = Checker(inputfile=inputproxyfile, outputfile=outputproxyfile)
  *         check.start_checking()             # <<<<<<<<<<<<<<
  *     except:
  * 
@@ -5069,8 +4763,8 @@ if (!__Pyx_RefNanny) {
  * except:
  * 
  *     try:             # <<<<<<<<<<<<<<
- *         inputproxyfile=argumentsdict['inputproxyfile']
- *         outputproxyfile=argumentsdict['outputproxyfile']
+ *         inputproxyfile = argumentsdict['inputproxyfile']
+ *         outputproxyfile = argumentsdict['outputproxyfile']
  */
         }
         __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
@@ -5083,7 +4777,7 @@ if (!__Pyx_RefNanny) {
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
 
         /* "proxychecker/proxycheckercython.pyx":159
- *         check=Checker(inputfile=inputproxyfile,outputfile=outputproxyfile)
+ *         check = Checker(inputfile=inputproxyfile, outputfile=outputproxyfile)
  *         check.start_checking()
  *     except:             # <<<<<<<<<<<<<<
  * 
@@ -5100,7 +4794,6 @@ if (!__Pyx_RefNanny) {
  *     except:
  * 
  *         print helpinfo             # <<<<<<<<<<<<<<
- * 
  */
           __Pyx_GetModuleGlobalName(__pyx_t_17, __pyx_n_s_helpinfo); if (unlikely(!__pyx_t_17)) __PYX_ERR(0, 161, __pyx_L24_except_error)
           __Pyx_GOTREF(__pyx_t_17);
@@ -5117,8 +4810,8 @@ if (!__Pyx_RefNanny) {
  * except:
  * 
  *     try:             # <<<<<<<<<<<<<<
- *         inputproxyfile=argumentsdict['inputproxyfile']
- *         outputproxyfile=argumentsdict['outputproxyfile']
+ *         inputproxyfile = argumentsdict['inputproxyfile']
+ *         outputproxyfile = argumentsdict['outputproxyfile']
  */
         __Pyx_XGIVEREF(__pyx_t_13);
         __Pyx_XGIVEREF(__pyx_t_14);
@@ -5143,7 +4836,7 @@ if (!__Pyx_RefNanny) {
  * # print argumentsdict
  * 
  * try:             # <<<<<<<<<<<<<<
- *     help=argumentsdict['help']
+ *     help = argumentsdict['help']
  *     print helpinfo
  */
     __Pyx_XGIVEREF(__pyx_t_7);
@@ -5161,7 +4854,7 @@ if (!__Pyx_RefNanny) {
 
   /* "proxychecker/proxycheckercython.pyx":1
  * from threading import Thread             # <<<<<<<<<<<<<<
- * from  requests import get
+ * from requests import get
  * 
  */
   __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -5865,221 +5558,6 @@ static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr
 }
 #endif
 
-/* PyIntCompare */
-static CYTHON_INLINE PyObject* __Pyx_PyInt_EqObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, CYTHON_UNUSED long inplace) {
-    if (op1 == op2) {
-        Py_RETURN_TRUE;
-    }
-    #if PY_MAJOR_VERSION < 3
-    if (likely(PyInt_CheckExact(op1))) {
-        const long b = intval;
-        long a = PyInt_AS_LONG(op1);
-        if (a == b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
-    }
-    #endif
-    #if CYTHON_USE_PYLONG_INTERNALS
-    if (likely(PyLong_CheckExact(op1))) {
-        int unequal;
-        unsigned long uintval;
-        Py_ssize_t size = Py_SIZE(op1);
-        const digit* digits = ((PyLongObject*)op1)->ob_digit;
-        if (intval == 0) {
-            if (size == 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
-        } else if (intval < 0) {
-            if (size >= 0)
-                Py_RETURN_FALSE;
-            intval = -intval;
-            size = -size;
-        } else {
-            if (size <= 0)
-                Py_RETURN_FALSE;
-        }
-        uintval = (unsigned long) intval;
-#if PyLong_SHIFT * 4 < SIZEOF_LONG*8
-        if (uintval >> (PyLong_SHIFT * 4)) {
-            unequal = (size != 5) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
-                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[4] != ((uintval >> (4 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
-        } else
-#endif
-#if PyLong_SHIFT * 3 < SIZEOF_LONG*8
-        if (uintval >> (PyLong_SHIFT * 3)) {
-            unequal = (size != 4) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
-                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[3] != ((uintval >> (3 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
-        } else
-#endif
-#if PyLong_SHIFT * 2 < SIZEOF_LONG*8
-        if (uintval >> (PyLong_SHIFT * 2)) {
-            unequal = (size != 3) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
-                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK)) | (digits[2] != ((uintval >> (2 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
-        } else
-#endif
-#if PyLong_SHIFT * 1 < SIZEOF_LONG*8
-        if (uintval >> (PyLong_SHIFT * 1)) {
-            unequal = (size != 2) || (digits[0] != (uintval & (unsigned long) PyLong_MASK))
-                 | (digits[1] != ((uintval >> (1 * PyLong_SHIFT)) & (unsigned long) PyLong_MASK));
-        } else
-#endif
-            unequal = (size != 1) || (((unsigned long) digits[0]) != (uintval & (unsigned long) PyLong_MASK));
-        if (unequal == 0) Py_RETURN_TRUE; else Py_RETURN_FALSE;
-    }
-    #endif
-    if (PyFloat_CheckExact(op1)) {
-        const long b = intval;
-        double a = PyFloat_AS_DOUBLE(op1);
-        if ((double)a == (double)b) Py_RETURN_TRUE; else Py_RETURN_FALSE;
-    }
-    return (
-        PyObject_RichCompare(op1, op2, Py_EQ));
-}
-
-/* PyErrFetchRestore */
-#if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    tmp_type = tstate->curexc_type;
-    tmp_value = tstate->curexc_value;
-    tmp_tb = tstate->curexc_traceback;
-    tstate->curexc_type = type;
-    tstate->curexc_value = value;
-    tstate->curexc_traceback = tb;
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-}
-static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-    *type = tstate->curexc_type;
-    *value = tstate->curexc_value;
-    *tb = tstate->curexc_traceback;
-    tstate->curexc_type = 0;
-    tstate->curexc_value = 0;
-    tstate->curexc_traceback = 0;
-}
-#endif
-
-/* PyIntBinop */
-#if !CYTHON_COMPILING_IN_PYPY
-static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, int inplace, int zerodivision_check) {
-    (void)inplace;
-    (void)zerodivision_check;
-    #if PY_MAJOR_VERSION < 3
-    if (likely(PyInt_CheckExact(op1))) {
-        const long b = intval;
-        long x;
-        long a = PyInt_AS_LONG(op1);
-            x = (long)((unsigned long)a + b);
-            if (likely((x^a) >= 0 || (x^b) >= 0))
-                return PyInt_FromLong(x);
-            return PyLong_Type.tp_as_number->nb_add(op1, op2);
-    }
-    #endif
-    #if CYTHON_USE_PYLONG_INTERNALS
-    if (likely(PyLong_CheckExact(op1))) {
-        const long b = intval;
-        long a, x;
-#ifdef HAVE_LONG_LONG
-        const PY_LONG_LONG llb = intval;
-        PY_LONG_LONG lla, llx;
-#endif
-        const digit* digits = ((PyLongObject*)op1)->ob_digit;
-        const Py_ssize_t size = Py_SIZE(op1);
-        if (likely(__Pyx_sst_abs(size) <= 1)) {
-            a = likely(size) ? digits[0] : 0;
-            if (size == -1) a = -a;
-        } else {
-            switch (size) {
-                case -2:
-                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                        a = -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 2:
-                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
-                        a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case -3:
-                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                        a = -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 3:
-                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
-                        a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case -4:
-                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                        a = -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
-                        lla = -(PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                case 4:
-                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
-                        a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
-                        break;
-#ifdef HAVE_LONG_LONG
-                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
-                        lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
-                        goto long_long;
-#endif
-                    }
-                    CYTHON_FALLTHROUGH;
-                default: return PyLong_Type.tp_as_number->nb_add(op1, op2);
-            }
-        }
-                x = a + b;
-            return PyLong_FromLong(x);
-#ifdef HAVE_LONG_LONG
-        long_long:
-                llx = lla + llb;
-            return PyLong_FromLongLong(llx);
-#endif
-        
-        
-    }
-    #endif
-    if (PyFloat_CheckExact(op1)) {
-        const long b = intval;
-        double a = PyFloat_AS_DOUBLE(op1);
-            double result;
-            PyFPE_START_PROTECT("add", return NULL)
-            result = ((double)a) + (double)b;
-            PyFPE_END_PROTECT(result)
-            return PyFloat_FromDouble(result);
-    }
-    return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
-}
-#endif
-
 /* BytesEquals */
 static CYTHON_INLINE int __Pyx_PyBytes_Equals(PyObject* s1, PyObject* s2, int equals) {
 #if CYTHON_COMPILING_IN_PYPY
@@ -6228,6 +5706,30 @@ return_ne:
     return (equals == Py_NE);
 #endif
 }
+
+/* PyErrFetchRestore */
+#if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    tmp_type = tstate->curexc_type;
+    tmp_value = tstate->curexc_value;
+    tmp_tb = tstate->curexc_traceback;
+    tstate->curexc_type = type;
+    tstate->curexc_value = value;
+    tstate->curexc_traceback = tb;
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+}
+static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+    *type = tstate->curexc_type;
+    *value = tstate->curexc_value;
+    *tb = tstate->curexc_traceback;
+    tstate->curexc_type = 0;
+    tstate->curexc_value = 0;
+    tstate->curexc_traceback = 0;
+}
+#endif
 
 /* RaiseException */
 #if PY_MAJOR_VERSION < 3
@@ -7469,6 +6971,130 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_GetSlice(PyObject* obj,
 bad:
     return NULL;
 }
+
+/* PyIntBinop */
+#if !CYTHON_COMPILING_IN_PYPY
+static PyObject* __Pyx_PyInt_AddObjC(PyObject *op1, PyObject *op2, CYTHON_UNUSED long intval, int inplace, int zerodivision_check) {
+    (void)inplace;
+    (void)zerodivision_check;
+    #if PY_MAJOR_VERSION < 3
+    if (likely(PyInt_CheckExact(op1))) {
+        const long b = intval;
+        long x;
+        long a = PyInt_AS_LONG(op1);
+            x = (long)((unsigned long)a + b);
+            if (likely((x^a) >= 0 || (x^b) >= 0))
+                return PyInt_FromLong(x);
+            return PyLong_Type.tp_as_number->nb_add(op1, op2);
+    }
+    #endif
+    #if CYTHON_USE_PYLONG_INTERNALS
+    if (likely(PyLong_CheckExact(op1))) {
+        const long b = intval;
+        long a, x;
+#ifdef HAVE_LONG_LONG
+        const PY_LONG_LONG llb = intval;
+        PY_LONG_LONG lla, llx;
+#endif
+        const digit* digits = ((PyLongObject*)op1)->ob_digit;
+        const Py_ssize_t size = Py_SIZE(op1);
+        if (likely(__Pyx_sst_abs(size) <= 1)) {
+            a = likely(size) ? digits[0] : 0;
+            if (size == -1) a = -a;
+        } else {
+            switch (size) {
+                case -2:
+                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                        a = -(long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                        lla = -(PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 2:
+                    if (8 * sizeof(long) - 1 > 2 * PyLong_SHIFT) {
+                        a = (long) (((((unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 2 * PyLong_SHIFT) {
+                        lla = (PY_LONG_LONG) (((((unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case -3:
+                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                        a = -(long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                        lla = -(PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 3:
+                    if (8 * sizeof(long) - 1 > 3 * PyLong_SHIFT) {
+                        a = (long) (((((((unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 3 * PyLong_SHIFT) {
+                        lla = (PY_LONG_LONG) (((((((unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case -4:
+                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                        a = -(long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                        lla = -(PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                case 4:
+                    if (8 * sizeof(long) - 1 > 4 * PyLong_SHIFT) {
+                        a = (long) (((((((((unsigned long)digits[3]) << PyLong_SHIFT) | (unsigned long)digits[2]) << PyLong_SHIFT) | (unsigned long)digits[1]) << PyLong_SHIFT) | (unsigned long)digits[0]));
+                        break;
+#ifdef HAVE_LONG_LONG
+                    } else if (8 * sizeof(PY_LONG_LONG) - 1 > 4 * PyLong_SHIFT) {
+                        lla = (PY_LONG_LONG) (((((((((unsigned PY_LONG_LONG)digits[3]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[2]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[1]) << PyLong_SHIFT) | (unsigned PY_LONG_LONG)digits[0]));
+                        goto long_long;
+#endif
+                    }
+                    CYTHON_FALLTHROUGH;
+                default: return PyLong_Type.tp_as_number->nb_add(op1, op2);
+            }
+        }
+                x = a + b;
+            return PyLong_FromLong(x);
+#ifdef HAVE_LONG_LONG
+        long_long:
+                llx = lla + llb;
+            return PyLong_FromLongLong(llx);
+#endif
+        
+        
+    }
+    #endif
+    if (PyFloat_CheckExact(op1)) {
+        const long b = intval;
+        double a = PyFloat_AS_DOUBLE(op1);
+            double result;
+            PyFPE_START_PROTECT("add", return NULL)
+            result = ((double)a) + (double)b;
+            PyFPE_END_PROTECT(result)
+            return PyFloat_FromDouble(result);
+    }
+    return (inplace ? PyNumber_InPlaceAdd : PyNumber_Add)(op1, op2);
+}
+#endif
 
 /* DictGetItem */
 #if PY_MAJOR_VERSION >= 3 && !CYTHON_COMPILING_IN_PYPY
