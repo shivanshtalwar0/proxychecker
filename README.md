@@ -21,3 +21,5 @@ you can compile simply using gcc<br>
 gcc -I /usr/include/python2.7/ proxychecker.c -o proxychecker-1.0_linux -lpython2.7 -lm -lutil -ldl
 </code>
 
+# Performance Metrics
+According to test performed it takes 1 hour to process 2018866 proxies (almost 2 Million).
