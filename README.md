@@ -3,6 +3,10 @@ High Performant,MultiThreaded, C Based proxy checker Tool which makes validating
 ![alt text](https://github.com/shivanshtalwar0/proxychecker/blob/master/example.png)
 
 
+# Dependencies Installation
+This tool depends on two of python 2.7 packages to run make sure to install them via pip inorder to have this tool running without any issues.
+execute the following command to satisfy all dependencies.
+  <code style='background-color:black color:white'>pip install tqdm requests</code><br>
 
 # Compilation for Linux
 Linux Executable is already included in Repository named proxychecker-1.0_linux<br>
